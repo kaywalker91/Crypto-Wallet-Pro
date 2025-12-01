@@ -182,13 +182,61 @@ dev_dependencies:
 | Windows | Supported |
 | Linux | Supported |
 
+## Branch Strategy
+
+This project uses a Git-flow inspired branching model:
+
+```
+main (production)
+  └── develop
+       ├── feature/wallet-evm
+       ├── feature/wallet-solana
+       ├── feature/defi-swap
+       └── hotfix/* (when needed)
+```
+
+### Branch Types
+
+| Branch | Purpose |
+|--------|---------|
+| `main` | Production-ready code |
+| `develop` | Integration branch for features |
+| `feature/*` | New feature development |
+| `hotfix/*` | Emergency production fixes |
+| `release/*` | Release preparation |
+
+### Quick Start for Contributors
+
+```bash
+# Clone and setup
+git clone https://github.com/kaywalker91/Crypto-Wallet-Pro.git
+cd Crypto-Wallet-Pro
+git checkout develop
+
+# Create feature branch
+git checkout -b feature/your-feature-name
+
+# After development, push and create PR to develop
+git push -u origin feature/your-feature-name
+```
+
+For detailed contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Contributing
 
+We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Git workflow and branch strategy
+- Commit message conventions
+- Pull request guidelines
+- Code review process
+
+### Quick Steps
+
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create your feature branch from `develop`
+3. Follow our commit conventions
+4. Push and create a Pull Request to `develop`
 
 ## License
 
