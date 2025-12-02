@@ -136,9 +136,20 @@ flutter build web --release     # Web build
 
 ## Screenshots
 
-| Splash | Onboarding | Dashboard |
-|--------|------------|-----------|
-| Animated logo with glow effect | Feature slides with skip option | Balance card with token list |
+### Onboarding Flow
+| Secure Wallet | Connect to dApps | NFT Gallery |
+|:-------------:|:----------------:|:-----------:|
+| <img src="assets/screenshots/03_onboarding_secure.png" width="200"/> | <img src="assets/screenshots/04_onboarding_dapps.png" width="200"/> | <img src="assets/screenshots/05_onboarding_nft.png" width="200"/> |
+
+### Wallet Setup
+| Create / Import | Recovery Phrase | Import Wallet |
+|:---------------:|:---------------:|:-------------:|
+| <img src="assets/screenshots/06_wallet_setup.png" width="200"/> | <img src="assets/screenshots/07_recovery_phrase.png" width="200"/> | <img src="assets/screenshots/08_import_wallet.png" width="200"/> |
+
+### Main Features
+| Dashboard | NFT Gallery |
+|:---------:|:-----------:|
+| <img src="assets/screenshots/01_dashboard.png" width="200"/> | <img src="assets/screenshots/02_nft_gallery.png" width="200"/> |
 
 ## Project Status
 
