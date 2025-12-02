@@ -2,10 +2,6 @@
 
 A modern, feature-rich cryptocurrency wallet application built with Flutter.
 
-<p align="center">
-  <img src="assets/images/logo_placeholder.png" alt="Crypto Wallet Pro Logo" width="120"/>
-</p>
-
 ## Features
 
 ### Current Implementation (v1.1.0)
