@@ -8,7 +8,7 @@ A modern, feature-rich cryptocurrency wallet application built with Flutter.
 
 ## Features
 
-### Current Implementation (v1.0.0)
+### Current Implementation (v1.1.0)
 
 - **Splash Screen**: Animated logo with glassmorphism effects
 - **Onboarding Flow**: 3-slide introduction showcasing key features
@@ -16,6 +16,8 @@ A modern, feature-rich cryptocurrency wallet application built with Flutter.
 - **Glassmorphism UI**: Modern dark theme with frosted glass effects
 - **Multi-Network Support**: Network selector for Mainnet/Testnet switching
 - **Pull-to-Refresh**: Refresh wallet data with swipe gesture
+- **Wallet Creation**: 4-step wizard with mnemonic generation and verification
+- **Wallet Import**: 12-word recovery phrase input with paste support
 
 ### Design Highlights
 
@@ -58,13 +60,20 @@ lib/
 │   ├── splash/                  # Splash screen
 │   ├── onboarding/              # Onboarding slides
 │   ├── main/                    # Main container with navigation
-│   └── dashboard/               # Wallet dashboard
+│   ├── dashboard/               # Wallet dashboard
+│   │   ├── domain/
+│   │   │   └── entities/        # Token, WalletBalance
+│   │   └── presentation/
+│   │       ├── pages/           # DashboardPage
+│   │       ├── providers/       # Riverpod state
+│   │       └── widgets/         # Balance card, Token list
+│   └── wallet/                  # Wallet creation/import
 │       ├── domain/
-│       │   └── entities/        # Token, WalletBalance
+│       │   └── entities/        # Wallet entity
 │       └── presentation/
-│           ├── pages/           # DashboardPage
-│           ├── providers/       # Riverpod state
-│           └── widgets/         # Balance card, Token list
+│           ├── pages/           # Create/Import wallet pages
+│           ├── providers/       # Wallet state management
+│           └── widgets/         # Mnemonic grid, input fields
 └── shared/                      # Cross-feature code
     ├── providers/               # Global state
     └── services/                # Shared services
@@ -141,11 +150,14 @@ flutter build web --release     # Web build
 - [x] Token list with skeleton loading
 - [x] Network selector chip
 - [x] Pull-to-refresh functionality
+- [x] Wallet creation flow (4-step wizard)
+- [x] Mnemonic generation and display
+- [x] Mnemonic verification system
+- [x] Wallet import with 12-word input
 
 ### Roadmap
 
-- [ ] Wallet creation/import
-- [ ] Real blockchain integration (Web3)
+- [ ] Real blockchain integration (Web3/BIP-39)
 - [ ] Send/Receive transactions
 - [ ] NFT Gallery
 - [ ] WalletConnect integration
@@ -237,6 +249,48 @@ We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) 
 2. Create your feature branch from `develop`
 3. Follow our commit conventions
 4. Push and create a Pull Request to `develop`
+
+## Development Log
+
+### 2024-12-02 - Wallet UI Implementation (Phase 5)
+
+**Session Summary**: Skeleton-First 방식으로 Wallet UI 구현
+
+#### Implemented Features
+
+| Feature | Files Created | Description |
+|---------|--------------|-------------|
+| Wallet Provider | `wallet_provider.dart` | Riverpod StateNotifier for wallet state |
+| Wallet Entity | `wallet.dart` | Core wallet model with mock data |
+| Create Wallet | `create_wallet_page.dart` | 4-step creation wizard |
+| Import Wallet | `import_wallet_page.dart` | 12-word recovery input |
+| Mnemonic Grid | `mnemonic_grid.dart` | Word display with copy button |
+| Mnemonic Input | `mnemonic_input_grid.dart` | 12-word input with paste |
+| Word Chip | `mnemonic_word_chip.dart` | Single word display widget |
+
+#### Wallet Creation Flow
+```
+Intro → Show Mnemonic → Verify (3 random words) → Complete
+```
+
+#### Wallet Import Flow
+```
+Input 12 words → Validate → Import Success → Dashboard
+```
+
+#### Key Technical Decisions
+- **State Management**: Riverpod StateNotifier pattern
+- **Navigation**: GoRouter with slide transitions
+- **UI Pattern**: Multi-step wizard with AnimatedSwitcher
+- **Verification**: Random 3-word verification from 12-word mnemonic
+- **Mock Data**: Using placeholder mnemonic for UI testing
+
+#### Next Steps
+- Phase 6: Dashboard completion with real wallet integration
+- Real BIP-39 mnemonic generation
+- Secure storage implementation
+
+---
 
 ## License
 

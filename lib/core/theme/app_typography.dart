@@ -156,4 +156,16 @@ class AppTypography {
         color: AppColors.textSecondary,
         height: 1.5,
       );
+
+  // Convenience getters for direct access to text styles
+  static TextStyle get headlineLarge => textTheme.headlineLarge!;
+  static TextStyle get headlineMedium => textTheme.headlineMedium!;
+  static TextStyle get headlineSmall => textTheme.headlineSmall!;
+  static TextStyle get bodyLarge => textTheme.bodyLarge!;
+  static TextStyle get bodyMedium => textTheme.bodyMedium!;
+  static TextStyle get bodySmall => textTheme.bodySmall!;
+  static TextStyle get labelLarge => textTheme.labelLarge!;
+  static TextStyle get labelMedium => textTheme.labelMedium!;
+  static TextStyle get labelSmall => textTheme.labelSmall!;
+  static TextStyle get caption => textTheme.bodySmall!;
 }

@@ -46,7 +46,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   void _finishOnboarding() {
     // TODO: Save onboarding completed flag
-    context.go(Routes.main);
+    // Navigate to wallet creation instead of main
+    context.go(Routes.createWallet);
   }
 
   @override
