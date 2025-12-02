@@ -4,7 +4,7 @@ A modern, feature-rich cryptocurrency wallet application built with Flutter.
 
 ## Features
 
-### Current Implementation (v1.1.0)
+### Current Implementation (v1.2.0)
 
 - **Splash Screen**: Animated logo with glassmorphism effects
 - **Onboarding Flow**: 3-slide introduction showcasing key features
@@ -14,6 +14,8 @@ A modern, feature-rich cryptocurrency wallet application built with Flutter.
 - **Pull-to-Refresh**: Refresh wallet data with swipe gesture
 - **Wallet Creation**: 4-step wizard with mnemonic generation and verification
 - **Wallet Import**: 12-word recovery phrase input with paste support
+- **NFT Gallery**: Grid view with ERC-721/ERC-1155 filtering and Hero animations
+- **NFT Detail Page**: Full NFT info with attributes, contract details, and action buttons
 
 ### Design Highlights
 
@@ -63,13 +65,20 @@ lib/
 │   │       ├── pages/           # DashboardPage
 │   │       ├── providers/       # Riverpod state
 │   │       └── widgets/         # Balance card, Token list
-│   └── wallet/                  # Wallet creation/import
+│   ├── wallet/                  # Wallet creation/import
+│   │   ├── domain/
+│   │   │   └── entities/        # Wallet entity
+│   │   └── presentation/
+│   │       ├── pages/           # Create/Import wallet pages
+│   │       ├── providers/       # Wallet state management
+│   │       └── widgets/         # Mnemonic grid, input fields
+│   └── nft/                     # NFT Gallery feature
 │       ├── domain/
-│       │   └── entities/        # Wallet entity
+│       │   └── entities/        # Nft, NftAttribute entities
 │       └── presentation/
-│           ├── pages/           # Create/Import wallet pages
-│           ├── providers/       # Wallet state management
-│           └── widgets/         # Mnemonic grid, input fields
+│           ├── pages/           # Gallery, Detail pages
+│           ├── providers/       # NFT state with filtering
+│           └── widgets/         # Grid item, shimmer, chips
 └── shared/                      # Cross-feature code
     ├── providers/               # Global state
     └── services/                # Shared services
@@ -150,12 +159,15 @@ flutter build web --release     # Web build
 - [x] Mnemonic generation and display
 - [x] Mnemonic verification system
 - [x] Wallet import with 12-word input
+- [x] NFT Gallery with grid view and filtering
+- [x] NFT Detail page with Hero animations
+- [x] Custom page transitions (Slide, Scale, Hero)
 
 ### Roadmap
 
 - [ ] Real blockchain integration (Web3/BIP-39)
 - [ ] Send/Receive transactions
-- [ ] NFT Gallery
+- [x] NFT Gallery (v1.2.0)
 - [ ] WalletConnect integration
 - [ ] QR code scanner
 - [ ] Transaction history
@@ -247,6 +259,49 @@ We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) 
 4. Push and create a Pull Request to `develop`
 
 ## Development Log
+
+### 2024-12-02 - NFT Gallery Implementation (v1.2.0)
+
+**Session Summary**: Skeleton-First 방식으로 NFT Gallery UI 전체 구현 완료
+
+#### Implementation Phases
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| Phase 1 | Entity + Mock Provider | ✅ Completed |
+| Phase 2 | Gallery UI (Grid, Filter, Shimmer) | ✅ Completed |
+| Phase 3 | Detail Page UI (Hero, Attributes) | ✅ Completed |
+| Phase 4 | Integration & Polishing | ✅ Completed |
+
+#### Files Created/Modified
+
+| File | Type | Description |
+|------|------|-------------|
+| `nft.dart` | Entity | NFT entity with ERC-721/1155 support |
+| `nft_attribute.dart` | Entity | NFT attribute (trait_type, value) |
+| `nft_provider.dart` | Provider | StateNotifier with filtering |
+| `nft_gallery_page.dart` | Page | Grid view with pull-to-refresh |
+| `nft_detail_page.dart` | Page | Full detail with Hero animation |
+| `nft_grid_item.dart` | Widget | Grid item with token badges |
+| `nft_loading_shimmer.dart` | Widget | Loading skeleton |
+| `nft_empty_state.dart` | Widget | Empty/Error states |
+| `nft_attribute_chip.dart` | Widget | Attribute display grid |
+| `page_transitions.dart` | Utility | Custom PageRouteBuilder |
+
+#### Key Features
+
+- **Filtering**: All / ERC-721 / ERC-1155 filter tabs with count badges
+- **Hero Animation**: Smooth image transition from grid to detail (400ms)
+- **Edge Cases**: Empty image placeholder, fallback names, error states
+- **Token Standards**: Full support for ERC-721 and ERC-1155 with quantity display
+- **UI Components**: Attribute grid, contract info, action buttons
+
+#### Next Steps
+- Real NFT API integration (OpenSea, Alchemy)
+- NFT transfer functionality
+- Collection page navigation
+
+---
 
 ### 2024-12-02 - Wallet UI Implementation (Phase 5)
 

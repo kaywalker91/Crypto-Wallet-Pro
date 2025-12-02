@@ -93,11 +93,60 @@ feature_name/
 - State management: Provider-based (check `providers/` directories)
 - The `wallet_connect` feature includes an additional `services/` directory for WalletConnect protocol integration
 
+## Implemented Features
+
+### NFT Gallery (Completed)
+
+The NFT feature follows Clean Architecture with Skeleton-First approach:
+
+```
+lib/features/nft/
+├── domain/
+│   └── entities/
+│       ├── nft.dart               # NFT entity with ERC-721/1155 support
+│       └── nft_attribute.dart     # NFT attribute (trait_type, value)
+└── presentation/
+    ├── pages/
+    │   ├── nft_gallery_page.dart  # Grid view with filtering, pull-to-refresh
+    │   └── nft_detail_page.dart   # Detail page with Hero animation
+    ├── providers/
+    │   └── nft_provider.dart      # Riverpod StateNotifier with mock data
+    └── widgets/
+        ├── nft_grid_item.dart     # Grid item with token badges
+        ├── nft_loading_shimmer.dart # Loading skeleton
+        ├── nft_empty_state.dart   # Empty/error states
+        └── nft_attribute_chip.dart # Attribute display chip
+```
+
+### Core Utilities
+
+```
+lib/core/utils/
+└── page_transitions.dart    # Custom PageRouteBuilder transitions
+    ├── SlidePageRoute       # iOS-style slide + fade
+    ├── ScalePageRoute       # Modal-style scale + fade
+    └── HeroPageRoute        # Optimized for Hero animations (400ms)
+```
+
+## NFT-Specific Patterns
+
+- **Hero Animations**: `Hero` tag format: `'nft_${contractAddress}_${tokenId}'`
+- **Filtering**: `NftFilter` enum (all, erc721, erc1155) with `filteredNfts` getter
+- **Token Standards**: `NftTokenType` enum supporting ERC-721 and ERC-1155
+- **Edge Case Handling**:
+  - Empty imageUrl → placeholder widget
+  - Empty name → fallback to `#${tokenId}`
+  - Empty collection → "Unknown Collection"
+
 ## Current Dependencies
 
 - Dart SDK: ^3.10.1
-- flutter_lints: ^6.0.0 (linting)
-- Uses Material Design icons
+- flutter_riverpod: ^2.4.9 (State management)
+- go_router: ^14.0.0 (Navigation)
+- google_fonts: ^6.1.0 (Typography)
+- shimmer: ^3.0.0 (Loading effects)
+- equatable: ^2.0.5 (Value equality)
+- flutter_lints: ^6.0.0 (Linting)
 
 ## Platform Support
 
