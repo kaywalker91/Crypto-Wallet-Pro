@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../dashboard/presentation/pages/dashboard_page.dart';
 import '../../../nft/presentation/pages/nft_gallery_page.dart';
+import '../../../wallet_connect/presentation/pages/wallet_connect_page.dart';
 
 /// Main page with bottom navigation
 /// Contains 4 tabs: Dashboard, NFTs, Connect, Settings
@@ -19,7 +20,7 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _pages = [
     const DashboardPage(),
     const NftGalleryPage(),
-    const _PlaceholderPage(title: 'Connect', icon: Icons.link),
+    const WalletConnectPage(),
     const _PlaceholderPage(title: 'Settings', icon: Icons.settings),
   ];
 
