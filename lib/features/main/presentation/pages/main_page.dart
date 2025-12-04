@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../dashboard/presentation/pages/dashboard_page.dart';
 import '../../../nft/presentation/pages/nft_gallery_page.dart';
+import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../wallet_connect/presentation/pages/wallet_connect_page.dart';
 
 /// Main page with bottom navigation
@@ -21,7 +22,7 @@ class _MainPageState extends State<MainPage> {
     const DashboardPage(),
     const NftGalleryPage(),
     const WalletConnectPage(),
-    const _PlaceholderPage(title: 'Settings', icon: Icons.settings),
+    const SettingsPage(),
   ];
 
   @override
@@ -140,46 +141,3 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-/// Placeholder page for unimplemented tabs
-class _PlaceholderPage extends StatelessWidget {
-  final String title;
-  final IconData icon;
-
-  const _PlaceholderPage({
-    required this.title,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 64,
-            color: AppColors.textTertiary,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Coming Soon',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textTertiary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
