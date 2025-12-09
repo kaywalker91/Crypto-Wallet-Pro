@@ -1,4 +1,5 @@
 import com.android.build.gradle.LibraryExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 allprojects {
     repositories {
@@ -29,7 +30,20 @@ subprojects {
                 if (namespace == null) {
                     namespace = "net.touchcapture.qr.flutterqr"
                 }
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_17
+                    targetCompatibility = JavaVersion.VERSION_17
+                    isCoreLibraryDesugaringEnabled = true
+                }
             }
+        }
+        tasks.withType<KotlinCompile>().configureEach {
+            kotlinOptions {
+                jvmTarget = JavaVersion.VERSION_17.toString()
+            }
+        }
+        dependencies {
+            add("coreLibraryDesugaring", "com.android.tools:desugar_jdk_libs:2.0.4")
         }
     }
 }
