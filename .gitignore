@@ -119,6 +119,9 @@ coverage/
 /android/fastlane/report.xml
 /ios/fastlane/report.xml
 
+# Tooling
+.serena/
+
 # Temporary files
 *.tmp
 *.temp

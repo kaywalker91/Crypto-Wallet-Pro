@@ -15,6 +15,7 @@ void main() {
         child: CryptoWalletApp(),
       ),
     );
+    await tester.pump(const Duration(seconds: 4));
 
     // Verify the app renders without errors
     expect(find.byType(CryptoWalletApp), findsOneWidget);

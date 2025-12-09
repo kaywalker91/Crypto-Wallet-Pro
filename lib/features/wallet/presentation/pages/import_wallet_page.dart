@@ -30,9 +30,8 @@ class _ImportWalletPageState extends ConsumerState<ImportWalletPage> {
   }
 
   void _validateMnemonic() {
-    // Check if all 12 words are filled
-    final filledWords = _words.where((w) => w.trim().isNotEmpty).toList();
-    _isValidMnemonic = filledWords.length == 12;
+    final notifier = ref.read(walletProvider.notifier);
+    _isValidMnemonic = notifier.validateMnemonic(_words);
   }
 
   Future<void> _importWallet() async {
@@ -41,7 +40,7 @@ class _ImportWalletPageState extends ConsumerState<ImportWalletPage> {
     final mnemonic = _words.join(' ');
     await ref.read(walletProvider.notifier).importWallet(mnemonic);
 
-    final walletState = ref.read(walletProvider);
+    final walletState = ref.read(walletViewProvider);
     if (walletState.hasWallet && mounted) {
       setState(() {
         _showImportSuccess = true;
@@ -51,7 +50,7 @@ class _ImportWalletPageState extends ConsumerState<ImportWalletPage> {
 
   @override
   Widget build(BuildContext context) {
-    final walletState = ref.watch(walletProvider);
+    final walletState = ref.watch(walletViewProvider);
     final isLoading = walletState.isLoading;
     final error = walletState.error;
 
@@ -328,6 +327,9 @@ class _ImportSuccessScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final hasPinAsync = ref.watch(hasPinProvider);
+    final hasPin = hasPinAsync.maybeWhen(data: (value) => value, orElse: () => false);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Container(
@@ -413,6 +415,13 @@ class _ImportSuccessScreen extends ConsumerWidget {
                     context.go('/main');
                   },
                   width: double.infinity,
+                ),
+                const SizedBox(height: 12),
+                GradientOutlinedButton(
+                  text: hasPin ? 'PIN 설정 완료' : 'Set PIN for Backup',
+                  onPressed: hasPin ? null : () => context.push('/pin-setup'),
+                  width: double.infinity,
+                  icon: Icons.lock_rounded,
                 ),
 
                 const SizedBox(height: 24),

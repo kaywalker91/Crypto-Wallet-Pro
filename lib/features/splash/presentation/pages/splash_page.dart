@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -6,17 +7,19 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_logo.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
+import '../../../wallet/presentation/providers/wallet_provider.dart';
 
 /// Splash screen with animated logo and app name
 /// Automatically navigates to onboarding after delay
-class SplashPage extends StatefulWidget {
+class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
 
   @override
-  State<SplashPage> createState() => _SplashPageState();
+  ConsumerState<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>
+class _SplashPageState extends ConsumerState<SplashPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -61,12 +64,39 @@ class _SplashPageState extends State<SplashPage>
   }
 
   Future<void> _navigateToNextScreen() async {
-    await Future.delayed(AppConstants.splashDuration);
-    if (mounted) {
-      // TODO: Check if user has completed onboarding
-      // For now, always go to onboarding
-      context.go(Routes.onboarding);
+    await Future.wait([
+      Future.delayed(AppConstants.splashDuration),
+      _waitForWalletLoad(),
+    ]);
+
+    if (!mounted) return;
+    final walletState = ref.read(walletViewProvider);
+
+    final hasWallet = walletState.wallet != null;
+    final settingsState = ref.read(settingsProvider);
+    final requireAuth =
+        settingsState.settings.biometricEnabled || settingsState.settings.pinEnabled;
+
+    if (hasWallet) {
+      if (walletState.isAuthenticated) {
+        context.go(Routes.main);
+        return;
+      }
+      if (requireAuth) {
+        context.go(Routes.lock);
+        return;
+      }
+      await ref.read(walletProvider.notifier).markAuthenticated();
+      context.go(Routes.main);
+      return;
     }
+
+    context.go(Routes.onboarding);
+  }
+
+  /// Waits until the wallet provider finishes its initial load.
+  Future<WalletState> _waitForWalletLoad() {
+    return ref.read(walletProvider.future);
   }
 
   @override

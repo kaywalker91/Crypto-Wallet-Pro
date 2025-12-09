@@ -15,7 +15,7 @@ class CreateWalletPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final walletState = ref.watch(walletProvider);
+    final walletState = ref.watch(walletViewProvider);
     final currentStep = walletState.currentStep;
 
     return Scaffold(
@@ -70,7 +70,7 @@ class _IntroStep extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isLoading = ref.watch(walletProvider).isLoading;
+    final isLoading = ref.watch(walletViewProvider).isLoading;
 
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -580,6 +580,9 @@ class _CompleteStep extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final hasPinAsync = ref.watch(hasPinProvider);
+    final hasPin = hasPinAsync.maybeWhen(data: (value) => value, orElse: () => false);
+
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -658,6 +661,13 @@ class _CompleteStep extends ConsumerWidget {
               context.go('/main');
             },
             width: double.infinity,
+          ),
+          const SizedBox(height: 12),
+          GradientOutlinedButton(
+            text: hasPin ? 'PIN 설정 완료' : 'Set PIN for Backup',
+            onPressed: hasPin ? null : () => context.push('/pin-setup'),
+            width: double.infinity,
+            icon: Icons.lock_rounded,
           ),
 
           const SizedBox(height: 24),

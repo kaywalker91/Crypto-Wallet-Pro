@@ -51,6 +51,13 @@ dependencies:
 
   # Utils
   equatable: ^2.0.5
+  fpdart: ^1.1.0
+  flutter_secure_storage: ^9.0.0
+  local_auth: ^2.1.8
+  web3dart: ^2.7.3
+  bip39: ^1.0.6
+  bip32: ^2.0.0
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:

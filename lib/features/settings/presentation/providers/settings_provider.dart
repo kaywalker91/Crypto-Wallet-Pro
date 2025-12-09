@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../shared/providers/storage_providers.dart';
+import '../../data/datasources/settings_local_datasource.dart';
 import '../../domain/entities/app_settings.dart';
 
 /// Settings state for the app
@@ -29,106 +31,84 @@ class SettingsState {
 
 /// Settings notifier for managing app settings
 class SettingsNotifier extends StateNotifier<SettingsState> {
-  SettingsNotifier() : super(const SettingsState()) {
+  SettingsNotifier(this._dataSource) : super(const SettingsState()) {
     _loadSettings();
   }
 
-  /// Load settings from storage (Mock)
+  final SettingsLocalDataSource _dataSource;
+
+  /// Load settings from storage
   Future<void> _loadSettings() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final settings = await _dataSource.loadSettings();
+      state = state.copyWith(isLoading: false, settings: settings);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to load settings',
+      );
+    }
+  }
 
-    // Simulate loading delay
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Mock: Return default settings
-    state = state.copyWith(
-      isLoading: false,
-      settings: const AppSettings(
-        selectedNetwork: NetworkType.sepolia,
-        biometricEnabled: false,
-        pinEnabled: true,
-        autoLockDuration: AutoLockDuration.after5Min,
-        displayCurrency: CurrencyType.usd,
-        notificationsEnabled: true,
-      ),
-    );
+  Future<void> _persist(AppSettings settings) async {
+    state = state.copyWith(settings: settings, isLoading: false, error: null);
+    try {
+      await _dataSource.saveSettings(settings);
+    } catch (_) {
+      state = state.copyWith(error: 'Failed to save settings');
+    }
   }
 
   /// Update selected network
   Future<void> updateNetwork(NetworkType network) async {
-    state = state.copyWith(isLoading: true);
-
-    // Simulate save delay
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    state = state.copyWith(
-      isLoading: false,
-      settings: state.settings.copyWith(selectedNetwork: network),
-    );
+    state = state.copyWith(isLoading: true, error: null);
+    await _persist(state.settings.copyWith(selectedNetwork: network));
   }
 
   /// Toggle biometric authentication
   Future<void> toggleBiometric(bool enabled) async {
-    state = state.copyWith(isLoading: true);
-
-    // Simulate biometric setup delay
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Mock: Always succeed
-    state = state.copyWith(
-      isLoading: false,
-      settings: state.settings.copyWith(biometricEnabled: enabled),
-    );
+    state = state.copyWith(isLoading: true, error: null);
+    await _persist(state.settings.copyWith(biometricEnabled: enabled));
   }
 
   /// Toggle PIN authentication
   Future<void> togglePin(bool enabled) async {
-    state = state.copyWith(isLoading: true);
-
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    state = state.copyWith(
-      isLoading: false,
-      settings: state.settings.copyWith(pinEnabled: enabled),
-    );
+    state = state.copyWith(isLoading: true, error: null);
+    await _persist(state.settings.copyWith(pinEnabled: enabled));
   }
 
   /// Update auto-lock duration
   Future<void> updateAutoLockDuration(AutoLockDuration duration) async {
-    state = state.copyWith(isLoading: true);
-
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    state = state.copyWith(
-      isLoading: false,
-      settings: state.settings.copyWith(autoLockDuration: duration),
-    );
+    state = state.copyWith(isLoading: true, error: null);
+    await _persist(state.settings.copyWith(autoLockDuration: duration));
   }
 
   /// Update display currency
   Future<void> updateCurrency(CurrencyType currency) async {
-    state = state.copyWith(isLoading: true);
-
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    state = state.copyWith(
-      isLoading: false,
-      settings: state.settings.copyWith(displayCurrency: currency),
-    );
+    state = state.copyWith(isLoading: true, error: null);
+    await _persist(state.settings.copyWith(displayCurrency: currency));
   }
 
   /// Toggle notifications
   Future<void> toggleNotifications(bool enabled) async {
-    state = state.copyWith(
-      settings: state.settings.copyWith(notificationsEnabled: enabled),
+    await _persist(
+      state.settings.copyWith(notificationsEnabled: enabled),
     );
   }
 }
 
+final settingsLocalDataSourceProvider =
+    Provider<SettingsLocalDataSource>((ref) {
+  final storage = ref.watch(secureStorageServiceProvider);
+  return SettingsLocalDataSourceImpl(storage);
+});
+
 /// Settings provider
 final settingsProvider =
     StateNotifierProvider<SettingsNotifier, SettingsState>((ref) {
-  return SettingsNotifier();
+  final localDataSource = ref.watch(settingsLocalDataSourceProvider);
+  return SettingsNotifier(localDataSource);
 });
 
 /// Convenience provider for current network

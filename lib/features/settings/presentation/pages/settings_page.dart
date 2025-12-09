@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../wallet/presentation/providers/wallet_provider.dart';
 import '../../domain/entities/app_settings.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/network_selector_sheet.dart';
@@ -83,6 +86,47 @@ class SettingsPage extends ConsumerWidget {
               child: SettingsSection(
                 title: 'Security',
                 children: [
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final hasPin = ref.watch(hasPinProvider).maybeWhen(
+                            data: (value) => value,
+                            orElse: () => false,
+                          );
+                      if (hasPin) return const SizedBox.shrink();
+                      return Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.warning.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.warning.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.lock_outline_rounded,
+                              color: AppColors.warning,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'PIN이 설정되어 있지 않습니다. 생체인증 실패 시 접근을 막으려면 PIN을 설정하세요.',
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => context.push(Routes.pinSetup),
+                              child: const Text('설정'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                   SettingsToggleTile(
                     icon: Icons.fingerprint,
                     iconColor: AppColors.success,
@@ -104,6 +148,13 @@ class SettingsPage extends ConsumerWidget {
                     onChanged: (value) {
                       ref.read(settingsProvider.notifier).togglePin(value);
                     },
+                  ),
+                  SettingsValueTile(
+                    icon: Icons.lock,
+                    iconColor: AppColors.primary,
+                    title: 'Set / Reset PIN',
+                    value: 'Open setup',
+                    onTap: () => context.push(Routes.pinSetup),
                   ),
                   SettingsValueTile(
                     icon: Icons.timer_outlined,
@@ -144,7 +195,7 @@ class SettingsPage extends ConsumerWidget {
                     title: 'Delete Wallet',
                     subtitle: 'Remove wallet from this device',
                     isDestructive: true,
-                    onTap: () => _showDeleteWalletConfirmation(context),
+                    onTap: () => _showDeleteWalletConfirmation(context, ref),
                   ),
                 ],
               ),
@@ -459,7 +510,40 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  void _showDeleteWalletConfirmation(BuildContext context) {
+  Future<void> _handleDeleteWallet(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    await ref.read(walletProvider.notifier).deleteWallet();
+
+    final error = ref.read(walletViewProvider).error;
+    if (error != null) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(error),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: const Text('Wallet deleted from this device'),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+
+    context.go(Routes.onboarding);
+  }
+
+  void _showDeleteWalletConfirmation(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -490,19 +574,9 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // TODO: Implement wallet deletion
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Wallet deletion not implemented yet'),
-                  backgroundColor: AppColors.error,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              );
+              await _handleDeleteWallet(context, ref);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
