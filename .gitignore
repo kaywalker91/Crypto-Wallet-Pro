@@ -49,6 +49,7 @@ app.*.map.json
 /android/local.properties
 /android/key.properties
 /android/app/release/
+/android/build/
 *.keystore
 *.jks
 

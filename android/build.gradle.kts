@@ -1,3 +1,5 @@
+import com.android.build.gradle.LibraryExtension
+
 allprojects {
     repositories {
         google()
@@ -15,8 +17,21 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
+
 subprojects {
     project.evaluationDependsOn(":app")
+}
+
+subprojects {
+    afterEvaluate {
+        if (name == "qr_code_scanner") {
+            extensions.findByType(LibraryExtension::class.java)?.let { ext ->
+                if (ext.namespace == null) {
+                    ext.namespace = "net.touchcapture.qr.flutterqr"
+                }
+            }
+        }
+    }
 }
 
 tasks.register<Delete>("clean") {
