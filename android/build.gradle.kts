@@ -23,11 +23,11 @@ subprojects {
 }
 
 subprojects {
-    afterEvaluate {
-        if (name == "qr_code_scanner") {
-            extensions.findByType(LibraryExtension::class.java)?.let { ext ->
-                if (ext.namespace == null) {
-                    ext.namespace = "net.touchcapture.qr.flutterqr"
+    if (name == "qr_code_scanner") {
+        plugins.withId("com.android.library") {
+            extensions.configure<LibraryExtension> {
+                if (namespace == null) {
+                    namespace = "net.touchcapture.qr.flutterqr"
                 }
             }
         }
