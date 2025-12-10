@@ -31,19 +31,23 @@ subprojects {
                     namespace = "net.touchcapture.qr.flutterqr"
                 }
                 compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_17
-                    targetCompatibility = JavaVersion.VERSION_17
+                    sourceCompatibility = JavaVersion.VERSION_1_8
+                    targetCompatibility = JavaVersion.VERSION_1_8
                     isCoreLibraryDesugaringEnabled = true
                 }
             }
-        }
-        tasks.withType<KotlinCompile>().configureEach {
-            kotlinOptions {
-                jvmTarget = JavaVersion.VERSION_17.toString()
+            dependencies {
+                add("coreLibraryDesugaring", "com.android.tools:desugar_jdk_libs:2.0.4")
             }
         }
-        dependencies {
-            add("coreLibraryDesugaring", "com.android.tools:desugar_jdk_libs:2.0.4")
+        tasks.withType<JavaCompile>().configureEach {
+            sourceCompatibility = JavaVersion.VERSION_1_8.toString()
+            targetCompatibility = JavaVersion.VERSION_1_8.toString()
+        }
+        tasks.withType<KotlinCompile>().configureEach {
+            compilerOptions {
+                jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+            }
         }
     }
 }

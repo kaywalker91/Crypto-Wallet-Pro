@@ -1,12 +1,17 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/env_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/providers/network_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/action_buttons_row.dart';
 import '../widgets/balance_card.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/router/app_router.dart';
 import '../widgets/token_list_tile.dart';
 
 /// Main dashboard page showing wallet balance and tokens
@@ -28,7 +33,7 @@ class DashboardPage extends ConsumerWidget {
           child: _NetworkSelector(
             network: selectedNetwork,
             onTap: () {
-              // TODO: Show network selection bottom sheet
+              _showNetworkSelectionBottomSheet(context, ref);
             },
           ),
         ),
@@ -74,8 +79,9 @@ class DashboardPage extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Action buttons
-              const ActionButtonsRow(
-                // TODO: Implement actions
+              ActionButtonsRow(
+                onSend: () => context.push(Routes.send),
+                // TODO: Implement other actions
               ),
 
               const SizedBox(height: 32),
@@ -98,6 +104,31 @@ class DashboardPage extends ConsumerWidget {
               ),
 
               const SizedBox(height: 12),
+
+              // Error message
+              if (dashboardState.error != null)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.error),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: AppColors.error),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          dashboardState.error!,
+                          style: AppTypography.textTheme.bodyMedium?.copyWith(
+                            color: AppColors.error,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
               // Token list
               if (dashboardState.isLoading)
@@ -126,11 +157,106 @@ class DashboardPage extends ConsumerWidget {
       ),
     );
   }
+
+  void _showNetworkSelectionBottomSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Select Network', style: AppTypography.textTheme.titleLarge),
+            const SizedBox(height: 24),
+            _NetworkOption(
+              name: 'Ethereum Mainnet',
+              isSelected: ref.read(selectedNetworkProvider) == NetworkType.mainnet,
+              onTap: () {
+                ref.read(selectedNetworkProvider.notifier).setNetwork(NetworkType.mainnet);
+                ref.read(dashboardProvider.notifier).refresh();
+                Navigator.pop(context);
+              },
+            ),
+            const SizedBox(height: 16),
+            _NetworkOption(
+              name: 'Sepolia Testnet',
+              isSelected: ref.read(selectedNetworkProvider) == NetworkType.sepolia,
+              onTap: () {
+                ref.read(selectedNetworkProvider.notifier).setNetwork(NetworkType.sepolia);
+                ref.read(dashboardProvider.notifier).refresh();
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NetworkOption extends StatelessWidget {
+  final String name;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _NetworkOption({
+    required this.name,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.cardBorder,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: name.contains('Sepolia') ? AppColors.warning : AppColors.success,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                name,
+                style: AppTypography.textTheme.bodyLarge?.copyWith(
+                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check, color: AppColors.primary),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Network selector chip
 class _NetworkSelector extends StatelessWidget {
-  final String network;
+  final NetworkType network;
   final VoidCallback? onTap;
 
   const _NetworkSelector({
@@ -140,6 +266,7 @@ class _NetworkSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isSepolia = network == NetworkType.sepolia;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -157,15 +284,13 @@ class _NetworkSelector extends StatelessWidget {
               width: 8,
               height: 8,
               decoration: BoxDecoration(
-                color: network == 'Sepolia'
-                    ? AppColors.warning
-                    : AppColors.success,
+                color: isSepolia ? AppColors.warning : AppColors.success,
                 shape: BoxShape.circle,
               ),
             ),
             const SizedBox(width: 8),
             Text(
-              network,
+              isSepolia ? 'Sepolia' : 'Mainnet',
               style: AppTypography.textTheme.labelMedium,
             ),
             const SizedBox(width: 4),
@@ -196,7 +321,7 @@ class _TokenListSkeleton extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.glassSurface,
             borderRadius: BorderRadius.circular(12),
-          ),
+            ),
         ),
       ),
     );

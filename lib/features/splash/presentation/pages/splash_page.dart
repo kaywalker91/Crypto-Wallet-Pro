@@ -64,34 +64,41 @@ class _SplashPageState extends ConsumerState<SplashPage>
   }
 
   Future<void> _navigateToNextScreen() async {
-    await Future.wait([
-      Future.delayed(AppConstants.splashDuration),
-      _waitForWalletLoad(),
-    ]);
+    try {
+      await Future.wait([
+        Future.delayed(AppConstants.splashDuration),
+        _waitForWalletLoad().timeout(const Duration(seconds: 5)),
+      ]);
 
-    if (!mounted) return;
-    final walletState = ref.read(walletViewProvider);
+      if (!mounted) return;
+      final walletState = ref.read(walletViewProvider);
 
-    final hasWallet = walletState.wallet != null;
-    final settingsState = ref.read(settingsProvider);
-    final requireAuth =
-        settingsState.settings.biometricEnabled || settingsState.settings.pinEnabled;
+      final hasWallet = walletState.wallet != null;
+      final settingsState = ref.read(settingsProvider);
+      final requireAuth =
+          settingsState.settings.biometricEnabled || settingsState.settings.pinEnabled;
 
-    if (hasWallet) {
-      if (walletState.isAuthenticated) {
+      if (hasWallet) {
+        if (walletState.isAuthenticated) {
+          context.go(Routes.main);
+          return;
+        }
+        if (requireAuth) {
+          context.go(Routes.lock);
+          return;
+        }
+        await ref.read(walletProvider.notifier).markAuthenticated();
         context.go(Routes.main);
         return;
       }
-      if (requireAuth) {
-        context.go(Routes.lock);
-        return;
-      }
-      await ref.read(walletProvider.notifier).markAuthenticated();
-      context.go(Routes.main);
-      return;
-    }
 
-    context.go(Routes.onboarding);
+      context.go(Routes.onboarding);
+    } catch (e) {
+      debugPrint('Splash navigation error: $e');
+      if (mounted) {
+        context.go(Routes.onboarding);
+      }
+    }
   }
 
   /// Waits until the wallet provider finishes its initial load.

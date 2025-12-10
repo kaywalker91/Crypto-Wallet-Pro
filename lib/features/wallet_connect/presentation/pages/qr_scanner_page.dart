@@ -275,43 +275,23 @@ class _QrScannerPageState extends ConsumerState<QrScannerPage> {
       return;
     }
 
-    // Simulate parsing the URI and getting dApp info
-    // In real implementation, this would come from the WalletConnect SDK
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    setState(() {
-      isProcessing = false;
-    });
-
-    // Show connection request sheet
-    final approved = await ConnectionRequestSheet.show(
-      context,
-      dapp: const DappInfo(
-        name: 'New dApp Connection',
-        url: 'dapp.example.com',
-        description: 'A decentralized application wants to connect to your wallet.',
-      ),
-      chainName: 'Ethereum Mainnet',
-      methods: ['eth_sendTransaction', 'personal_sign'],
-    );
-
-    if (approved == true) {
-      // Pair with the dApp
+    try {
       await ref.read(walletConnectProvider.notifier).pair(code);
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Successfully connected!'),
-            backgroundColor: AppColors.success,
+            content: Text('Pairing initiated... Check pending sessions.'),
+            backgroundColor: AppColors.info,
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
-    } else {
-      // Reset scanner
+    } catch (e) {
       setState(() {
-        hasScanned = false;
+         isProcessing = false;
+         errorMessage = 'Pairing failed: $e';
+         hasScanned = false; // Allow retry
       });
       controller?.resumeCamera();
     }

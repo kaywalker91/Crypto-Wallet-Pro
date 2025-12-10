@@ -69,6 +69,12 @@ class FakeWalletLocalDataSource implements WalletLocalDataSource {
     if (throwable != null) throw throwable!;
     savedMnemonic = mnemonic;
   }
+
+  @override
+  Future<String?> retrievePrivateKey() async {
+    if (throwable != null) throw throwable!;
+    return '0x${'1'.padLeft(64, '0')}';
+  }
 }
 
 void main() {

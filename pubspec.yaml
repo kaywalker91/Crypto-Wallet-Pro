@@ -58,6 +58,8 @@ dependencies:
   bip39: ^1.0.6
   bip32: ^2.0.0
   crypto: ^3.0.3
+  http: ^1.6.0
+  walletconnect_flutter_v2: ^2.4.1
 
 dev_dependencies:
   flutter_test:

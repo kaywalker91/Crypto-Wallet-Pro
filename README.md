@@ -6,7 +6,7 @@ Flutter로 개발된 현대적이고 기능이 풍부한 암호화폐 지갑 애
 
 ## Features / 주요 기능
 
-### Current Implementation (v1.2.0) / 현재 구현된 기능
+### Current Implementation (v1.4.0) / 현재 구현된 기능
 
 - **Splash Screen**: Animated logo with glassmorphism effects
 - **스플래시 화면**: 글래스모피즘 효과가 적용된 애니메이션 로고
@@ -14,8 +14,8 @@ Flutter로 개발된 현대적이고 기능이 풍부한 암호화폐 지갑 애
 - **Onboarding Flow**: 3-slide introduction showcasing key features
 - **온보딩 플로우**: 주요 기능을 소개하는 3단계 슬라이드
 
-- **Dashboard**: Main wallet interface with balance display and token list
-- **대시보드**: 잔액 표시 및 토큰 목록이 포함된 메인 지갑 인터페이스
+- **Dashboard**: Main wallet interface with real-time balance display and token list
+- **대시보드**: 실시간 잔액 표시 및 토큰 목록이 포함된 메인 지갑 인터페이스
 
 - **Glassmorphism UI**: Modern dark theme with frosted glass effects
 - **글래스모피즘 UI**: 프로스트 글래스 효과가 적용된 모던 다크 테마
@@ -38,8 +38,14 @@ Flutter로 개발된 현대적이고 기능이 풍부한 암호화폐 지갑 애
 - **NFT Detail Page**: Full NFT info with attributes, contract details, and action buttons
 - **NFT 상세 페이지**: 속성, 컨트랙트 정보, 액션 버튼이 포함된 전체 NFT 정보
 
-- **WalletConnect**: QR scanner for dApp connections with session management
-- **WalletConnect**: dApp 연결을 위한 QR 스캐너 및 세션 관리
+- **WalletConnect v2**: Full WalletConnect v2 integration with session management and dApp pairing
+- **WalletConnect v2**: 세션 관리 및 dApp 페어링이 포함된 WalletConnect v2 전체 통합
+
+- **Send Transactions**: ETH transfer with gas estimation and transaction confirmation
+- **송금 기능**: 가스 추정 및 트랜잭션 확인이 포함된 ETH 전송
+
+- **Real Blockchain Integration**: Web3 client for fetching real ETH/ERC-20 balances
+- **실제 블록체인 통합**: 실제 ETH/ERC-20 잔액 조회를 위한 Web3 클라이언트
 
 - **Settings Page**: App configuration with network selection and security options
 - **설정 페이지**: 네트워크 선택 및 보안 옵션이 포함된 앱 설정
@@ -76,6 +82,8 @@ Flutter로 개발된 현대적이고 기능이 풍부한 암호화폐 지갑 애
 | UI Effects / UI 효과 | Shimmer, BackdropFilter |
 | Secure Storage / 보안 저장소 | flutter_secure_storage |
 | QR Scanner / QR 스캐너 | mobile_scanner |
+| Web3 / 블록체인 | web3dart, http |
+| WalletConnect / 월렛커넥트 | walletconnect_flutter_v2 |
 
 ## Architecture / 아키텍처
 
@@ -105,9 +113,10 @@ lib/
 │   ├── main/                    # Main container with navigation / 내비게이션 메인 컨테이너
 │   ├── dashboard/               # Wallet dashboard / 지갑 대시보드
 │   ├── wallet/                  # Wallet creation/import / 지갑 생성/가져오기
+│   ├── send/                    # Send transactions / 송금 기능
 │   ├── nft/                     # NFT Gallery feature / NFT 갤러리 기능
 │   ├── settings/                # App settings / 앱 설정
-│   └── wallet_connect/          # WalletConnect integration / WalletConnect 통합
+│   └── wallet_connect/          # WalletConnect v2 integration / WalletConnect v2 통합
 └── shared/                      # Cross-feature code / 기능 간 공유 코드
     ├── providers/               # Global state / 전역 상태
     └── services/                # Shared services / 공유 서비스
@@ -218,10 +227,11 @@ flutter build web --release     # Web build / 웹 빌드
 
 ### Roadmap / 로드맵
 
-- [ ] Real blockchain integration (Web3/BIP-39) / 실제 블록체인 통합
-- [ ] Send/Receive transactions / 송금/수신 트랜잭션
+- [x] Real blockchain integration (Web3/BIP-39) / 실제 블록체인 통합 (v1.4.0)
+- [x] Send transactions / 송금 트랜잭션 (v1.4.0)
+- [ ] Receive transactions with QR / QR 포함 수신 트랜잭션
 - [x] NFT Gallery (v1.2.0) / NFT 갤러리
-- [x] WalletConnect integration / WalletConnect 통합
+- [x] WalletConnect v2 integration / WalletConnect v2 통합 (v1.4.0)
 - [x] QR code scanner / QR 코드 스캐너
 - [ ] Transaction history / 트랜잭션 히스토리
 - [x] Settings page / 설정 페이지
@@ -240,6 +250,9 @@ dependencies:
   flutter_secure_storage: ^9.2.4 # Secure storage / 보안 저장소
   local_auth: ^2.3.0             # Biometric auth / 생체 인증
   mobile_scanner: ^6.0.2         # QR scanner / QR 스캐너
+  web3dart: ^2.7.3               # Ethereum blockchain / 이더리움 블록체인
+  http: ^1.2.0                   # HTTP client for Web3 / Web3용 HTTP 클라이언트
+  walletconnect_flutter_v2: ^2.3.1 # WalletConnect v2 SDK
 
 dev_dependencies:
   flutter_lints: ^6.0.0          # Linting rules / 린팅 규칙
@@ -322,6 +335,52 @@ We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) 
 4. Push and create a Pull Request to `develop` / 푸시 후 `develop`으로 PR 생성
 
 ## Development Log / 개발 로그
+
+### 2025-12-10 - Web3 Integration & Send Feature (v1.4.0)
+
+**Session Summary**: 실제 블록체인 통합 및 송금 기능 구현 완료
+
+#### Implementation Phases / 구현 단계
+
+| Phase / 단계 | Description / 설명 | Status / 상태 |
+|-------|-------------|--------|
+| Phase 9 | Web3 Client Integration / Web3 클라이언트 통합 | ✅ Completed / 완료 |
+| Phase 10 | Real Balance Fetching / 실시간 잔액 조회 | ✅ Completed / 완료 |
+| Phase 11 | Send Transaction Feature / 송금 기능 | ✅ Completed / 완료 |
+| Phase 12 | WalletConnect v2 Service / WalletConnect v2 서비스 | ✅ Completed / 완료 |
+
+#### Key Features / 주요 기능
+
+- **Web3 Client Provider**: Configurable RPC endpoints for Mainnet/Sepolia
+- **Web3 클라이언트 프로바이더**: 메인넷/세폴리아용 설정 가능한 RPC 엔드포인트
+
+- **Balance Remote Datasource**: Real ETH and ERC-20 balance fetching via web3dart
+- **잔액 원격 데이터소스**: web3dart를 통한 실제 ETH 및 ERC-20 잔액 조회
+
+- **Send Page**: Full transaction flow with address input, amount, gas estimation
+- **송금 페이지**: 주소 입력, 금액, 가스 추정이 포함된 전체 트랜잭션 플로우
+
+- **Transaction Repository**: Clean architecture implementation for transactions
+- **트랜잭션 레포지토리**: 트랜잭션을 위한 클린 아키텍처 구현
+
+- **WalletConnect Service**: Full WalletConnect v2 SDK integration with pairing and session management
+- **WalletConnect 서비스**: 페어링 및 세션 관리가 포함된 WalletConnect v2 SDK 전체 통합
+
+- **Network Provider**: Global network state management for multi-chain support
+- **네트워크 프로바이더**: 멀티체인 지원을 위한 전역 네트워크 상태 관리
+
+#### New Files / 신규 파일
+
+```
+lib/core/constants/env_config.dart          # Environment configuration / 환경 설정
+lib/core/network/web3_client_provider.dart  # Web3 client / Web3 클라이언트
+lib/shared/providers/network_provider.dart  # Network state / 네트워크 상태
+lib/features/dashboard/data/               # Balance data layer / 잔액 데이터 레이어
+lib/features/send/                         # Complete send feature / 송금 기능 전체
+lib/features/wallet_connect/data/services/ # WalletConnect service / WC 서비스
+```
+
+---
 
 ### 2024-12-10 - Secure Storage & Lock Flow (v1.3.0)
 

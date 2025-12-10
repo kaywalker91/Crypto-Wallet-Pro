@@ -20,6 +20,7 @@ abstract class WalletLocalDataSource {
   Future<void> cacheWallet(Wallet wallet);
   Future<Wallet?> readCachedWallet();
   Future<void> clearAll();
+  Future<String?> retrievePrivateKey();
 }
 
 class WalletLocalDataSourceImpl implements WalletLocalDataSource {
@@ -146,6 +147,19 @@ class WalletLocalDataSourceImpl implements WalletLocalDataSource {
       await _authSessionService.clearSession();
     } catch (e) {
       throw StorageFailure('Failed to clear wallet storage', cause: e);
+    }
+  }
+
+  @override
+  Future<String?> retrievePrivateKey() async {
+    try {
+      final mnemonic = await getMnemonic();
+      if (mnemonic == null) return null;
+      
+      final ethKey = await derivePrivateKey(mnemonic);
+      return bytesToHex(ethKey.privateKey, include0x: true);
+    } catch (e) {
+      throw StorageFailure('Failed to retrieve private key', cause: e);
     }
   }
 }

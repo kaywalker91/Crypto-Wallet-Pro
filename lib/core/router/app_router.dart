@@ -8,6 +8,7 @@ import '../../features/auth/presentation/pages/lock_screen_page.dart';
 import '../../features/wallet/presentation/pages/create_wallet_page.dart';
 import '../../features/wallet/presentation/pages/import_wallet_page.dart';
 import '../../features/settings/presentation/pages/pin_setup_page.dart';
+import '../../features/send/presentation/pages/send_page.dart';
 
 /// Application router configuration
 /// Uses GoRouter for declarative routing
@@ -132,6 +133,27 @@ class AppRouter {
           },
         ),
       ),
+
+      // Send transaction
+      GoRoute(
+        path: '/send',
+        name: 'send',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const SendPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0.0, 1.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
+            var tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        ),
+      ),
     ],
   );
 }
@@ -147,4 +169,5 @@ class Routes {
   static const String createWallet = '/create-wallet';
   static const String importWallet = '/import-wallet';
   static const String pinSetup = '/pin-setup';
+  static const String send = '/send';
 }

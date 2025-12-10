@@ -1,8 +1,18 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart' hide SessionRequest;
+import 'package:web3dart/crypto.dart';
+import 'package:web3dart/web3dart.dart';
 
 import '../../domain/entities/dapp_info.dart';
 import '../../domain/entities/session_request.dart';
 import '../../domain/entities/wallet_session.dart';
+import '../../data/services/wallet_connect_service.dart';
+import '../../../wallet/data/datasources/wallet_local_datasource.dart';
+import '../../../wallet/presentation/providers/wallet_provider.dart';
 
 /// Session filter options
 enum SessionFilter {
@@ -20,6 +30,9 @@ class WalletConnectState {
   final String? error;
   final SessionFilter filter;
   final bool isScanning;
+  
+  // Keep track of raw proposals to approve them later
+  final Map<String, SessionProposalEvent> proposals;
 
   const WalletConnectState({
     this.sessions = const [],
@@ -29,6 +42,7 @@ class WalletConnectState {
     this.error,
     this.filter = SessionFilter.all,
     this.isScanning = false,
+    this.proposals = const {},
   });
 
   WalletConnectState copyWith({
@@ -39,6 +53,7 @@ class WalletConnectState {
     String? error,
     SessionFilter? filter,
     bool? isScanning,
+    Map<String, SessionProposalEvent>? proposals,
     bool clearSelectedSession = false,
     bool clearError = false,
   }) {
@@ -50,6 +65,7 @@ class WalletConnectState {
       error: clearError ? null : (error ?? this.error),
       filter: filter ?? this.filter,
       isScanning: isScanning ?? this.isScanning,
+      proposals: proposals ?? this.proposals,
     );
   }
 
@@ -98,33 +114,163 @@ class WalletConnectState {
 
 /// WalletConnect state notifier
 class WalletConnectNotifier extends StateNotifier<WalletConnectState> {
-  WalletConnectNotifier() : super(const WalletConnectState(isLoading: true)) {
-    _loadMockData();
+  final WalletConnectService _service;
+
+  // Event callbacks (dynamic to avoid type issues with EventHandler)
+  late dynamic _onSessionProposal;
+  late dynamic _onSessionRequest;
+  late dynamic _onSessionDelete;
+
+  final WalletLocalDataSource _walletLocalDataSource;
+
+  WalletConnectNotifier(this._service, this._walletLocalDataSource) : super(const WalletConnectState(isLoading: true)) {
+    _initialize();
   }
 
-  /// Load mock data (simulates loading sessions from storage)
-  Future<void> _loadMockData() async {
+  Future<void> _initialize() async {
     try {
-      // Simulate network delay
-      await Future.delayed(const Duration(milliseconds: 1200));
-
-      state = WalletConnectState(
-        sessions: MockSessions.all,
-        pendingRequests: MockRequests.all,
-        isLoading: false,
-      );
+      if (!_service.isInitialized) {
+        await _service.initialize();
+      }
+      
+      _setupListeners();
+      _refreshSessions();
     } catch (e) {
-      state = WalletConnectState(
-        isLoading: false,
-        error: 'Failed to load sessions: $e',
-      );
+      state = state.copyWith(isLoading: false, error: 'Failed to init WalletConnect: $e');
     }
+  }
+
+  void _setupListeners() {
+    _onSessionProposal = (SessionProposalEvent event) {
+      final proposals = Map<String, SessionProposalEvent>.from(state.proposals);
+      proposals[event.id.toString()] = event;
+      state = state.copyWith(proposals: proposals);
+      _rebuildSessionList();
+    };
+
+    _onSessionRequest = (SessionRequestEvent event) {
+      final request = _mapRequestEventToEntity(event);
+      final requests = List<SessionRequest>.from(state.pendingRequests)..add(request);
+      state = state.copyWith(pendingRequests: requests);
+    };
+
+    _onSessionDelete = (SessionDelete event) {
+      _refreshSessions();
+    };
+
+    _service.sessionProposal.subscribe(_onSessionProposal);
+    _service.sessionRequest.subscribe(_onSessionRequest);
+    _service.sessionDelete.subscribe(_onSessionDelete);
+  }
+
+  void _refreshSessions() {
+    try {
+      final activeSessions = _service.getActiveSessions().map(_mapSessionDataToEntity).toList();
+      _rebuildSessionList(activeSessions: activeSessions);
+    } catch (e) {
+      // Handle case where service might not be ready
+      print('Error refreshing sessions: $e');
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  void _rebuildSessionList({List<WalletSession>? activeSessions}) {
+     List<WalletSession> active = [];
+     if (activeSessions != null) {
+       active = activeSessions;
+     } else {
+       try {
+         active = _service.getActiveSessions().map(_mapSessionDataToEntity).toList();
+       } catch (_) {}
+     }
+    
+    final pending = state.proposals.values.map((p) {
+      return WalletSession(
+        id: p.id.toString(),
+        dapp: DappInfo(
+          name: p.params.proposer.metadata.name,
+          url: p.params.proposer.metadata.url,
+          iconUrl: p.params.proposer.metadata.icons.isNotEmpty ? p.params.proposer.metadata.icons.first : null,
+          description: p.params.proposer.metadata.description,
+        ),
+        chainId: '', // Can be derived from requiredNamespaces
+        chainName: 'Requesting Connection...',
+        connectedAt: DateTime.now(),
+        status: SessionStatus.pending,
+      );
+    }).toList();
+
+    state = state.copyWith(
+      sessions: [...pending, ...active],
+      isLoading: false,
+    );
+  }
+
+  WalletSession _mapSessionDataToEntity(SessionData data) {
+    return WalletSession(
+      id: data.topic,
+      dapp: DappInfo(
+        name: data.peer.metadata.name,
+        url: data.peer.metadata.url,
+        iconUrl: data.peer.metadata.icons.isNotEmpty ? data.peer.metadata.icons.first : null,
+        description: data.peer.metadata.description,
+      ),
+      chainId: '', // Extract from namespaces if needed
+      chainName: 'Connected',
+      connectedAt: DateTime.fromMillisecondsSinceEpoch(data.expiry * 1000 - 604800000), // Approx connected time
+      expiresAt: DateTime.fromMillisecondsSinceEpoch(data.expiry * 1000),
+      status: SessionStatus.active,
+      methods: [], // Extract from namespaces
+      walletAddress: '', // User's address
+    );
+  }
+
+  SessionRequest _mapRequestEventToEntity(SessionRequestEvent event) {
+    // Find dApp info from session
+    final session = state.sessions.firstWhere(
+      (s) => s.id == event.topic,
+      orElse: () => WalletSession(
+        id: event.topic,
+        dapp: const DappInfo(name: 'Unknown', url: ''),
+        chainId: event.chainId,
+        chainName: '',
+        connectedAt: DateTime.now(),
+        status: SessionStatus.active,
+      ),
+    );
+
+    return SessionRequest(
+      id: event.id.toString(),
+      sessionId: event.topic,
+      dapp: session.dapp,
+      method: event.params.request.method,
+      type: _mapMethodToType(event.params.request.method),
+      params: event.params.request.params,
+      requestedAt: DateTime.now(),
+      chainId: event.chainId,
+    );
+  }
+
+  RequestType _mapMethodToType(String method) {
+    if (method.contains('sendTransaction')) return RequestType.sendTransaction;
+    if (method.contains('signTransaction')) return RequestType.signTransaction;
+    if (method.contains('signTypedData')) return RequestType.signTypedData;
+    if (method.contains('personal_sign') || method.contains('eth_sign')) return RequestType.signMessage;
+    return RequestType.signMessage;
+  }
+
+  @override
+  void dispose() {
+    _service.sessionProposal.unsubscribe(_onSessionProposal);
+    _service.sessionRequest.unsubscribe(_onSessionRequest);
+    _service.sessionDelete.unsubscribe(_onSessionDelete);
+    super.dispose();
   }
 
   /// Refresh sessions
   Future<void> refresh() async {
     state = state.copyWith(isLoading: true, clearError: true);
-    await _loadMockData();
+    _refreshSessions();
   }
 
   /// Select a session for detail view
@@ -152,94 +298,175 @@ class WalletConnectNotifier extends StateNotifier<WalletConnectState> {
     state = state.copyWith(isScanning: false);
   }
 
-  /// Pair with a new dApp (mock implementation)
+  /// Pair with a new dApp
   Future<void> pair(String uri) async {
     state = state.copyWith(isLoading: true);
-
-    // Simulate pairing delay
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    // In real implementation, this would parse the URI and create a session
-    // For now, just refresh to simulate the connection
-    await _loadMockData();
+    try {
+      await _service.pair(uri);
+      // Wait for session proposal event to arrive
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Pairing failed: $e');
+      rethrow;
+    }
   }
 
   /// Approve a pending session
   Future<void> approveSession(String sessionId) async {
-    final sessions = state.sessions.map((s) {
-      if (s.id == sessionId && s.status == SessionStatus.pending) {
-        return WalletSession(
-          id: s.id,
-          dapp: s.dapp,
-          chainId: s.chainId,
-          chainName: s.chainName,
-          connectedAt: DateTime.now(),
-          expiresAt: DateTime.now().add(const Duration(days: 7)),
-          status: SessionStatus.active,
-          methods: s.methods,
-          events: s.events,
-          walletAddress: '0x742d35Cc6634C0532925a3b844Bc9e7595f5bB12',
-        );
-      }
-      return s;
-    }).toList();
+    final proposal = state.proposals[sessionId];
+    if (proposal == null) return;
 
-    state = state.copyWith(sessions: sessions);
+    state = state.copyWith(isLoading: true);
+    try {
+      // Build namespaces from required and optional
+      final namespaces = <String, Namespace>{};
+      
+      // Get real address
+      final privateKey = await _walletLocalDataSource.retrievePrivateKey();
+      String userAddress = '';
+      if (privateKey != null) {
+        final credentials = EthPrivateKey.fromHex(privateKey);
+        userAddress = credentials.address.hex;
+      } else {
+        throw Exception('Wallet not unlocked');
+      }
+
+      final chainId = 'eip155:1';
+
+      proposal.params.requiredNamespaces.forEach((key, required) {
+         final chains = required.chains ?? [chainId];
+         final methods = required.methods;
+         final events = required.events;
+         
+         namespaces[key] = Namespace(
+           accounts: chains.map((c) => '$c:$userAddress').toList(),
+           methods: methods,
+           events: events,
+         );
+      });
+      
+      // Also handle optional namespaces if needed, but for now stick to required
+
+      await _service.approveSession(id: proposal.id, namespaces: namespaces);
+      
+      // Remove from proposals map
+      final newProposals = Map<String, SessionProposalEvent>.from(state.proposals);
+      newProposals.remove(sessionId);
+      state = state.copyWith(proposals: newProposals);
+      
+      _refreshSessions(); // Will assume session is active now
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Failed to approve session: $e');
+    }
   }
 
   /// Reject a pending session
-  void rejectSession(String sessionId) {
-    final sessions = state.sessions.where((s) => s.id != sessionId).toList();
-    state = state.copyWith(sessions: sessions);
+  Future<void> rejectSession(String sessionId) async {
+    final proposal = state.proposals[sessionId];
+    if (proposal == null) return;
+
+    try {
+      await _service.rejectSession(
+        id: proposal.id,
+        reason: Errors.getSdkError(Errors.USER_REJECTED),
+      );
+      
+      final newProposals = Map<String, SessionProposalEvent>.from(state.proposals);
+      newProposals.remove(sessionId);
+      state = state.copyWith(proposals: newProposals);
+      _rebuildSessionList();
+    } catch (e) {
+       state = state.copyWith(error: 'Failed to reject session: $e');
+    }
   }
 
   /// Disconnect a session
   Future<void> disconnectSession(String sessionId) async {
     state = state.copyWith(isLoading: true);
-
-    // Simulate disconnect delay
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    final sessions = state.sessions.where((s) => s.id != sessionId).toList();
-    final pendingRequests = state.pendingRequests
-        .where((r) => r.sessionId != sessionId)
-        .toList();
-
-    state = state.copyWith(
-      sessions: sessions,
-      pendingRequests: pendingRequests,
-      isLoading: false,
-      clearSelectedSession: true,
-    );
+    try {
+      await _service.disconnectSession(
+        topic: sessionId,
+        reason: Errors.getSdkError(Errors.USER_DISCONNECTED),
+      );
+    } catch (e) {
+       state = state.copyWith(isLoading: false, error: 'Failed to disconnect: $e');
+    }
   }
 
   /// Approve a pending request
   Future<void> approveRequest(String requestId) async {
+    final request = state.pendingRequests.firstWhere((r) => r.id == requestId);
     state = state.copyWith(isLoading: true);
 
-    // Simulate signing delay
-    await Future.delayed(const Duration(milliseconds: 1000));
+    try {
+      final privateKey = await _walletLocalDataSource.retrievePrivateKey();
+      if (privateKey == null) {
+        throw Exception('Wallet not found or locked');
+      }
 
-    final pendingRequests = state.pendingRequests
-        .where((r) => r.id != requestId)
-        .toList();
+      final credentials = EthPrivateKey.fromHex(privateKey);
+      String result;
 
-    state = state.copyWith(
-      pendingRequests: pendingRequests,
-      isLoading: false,
-    );
+      if (request.method == 'personal_sign' || request.method == 'eth_sign') {
+        // params: [message, address]
+        final List params = request.params is List ? request.params as List : [];
+        if (params.isEmpty) throw Exception('Invalid parameters');
+        
+        final message = params.first as String;
+        Uint8List messageBytes;
+        if (message.startsWith('0x')) {
+           messageBytes = hexToBytes(message);
+        } else {
+           messageBytes = Uint8List.fromList(utf8.encode(message));
+        }
+        
+        final signature = await credentials.signPersonalMessage(messageBytes);
+        result = bytesToHex(signature, include0x: true);
+        
+      } else if (request.method == 'eth_sendTransaction') {
+        final List listParams = request.params is List ? request.params as List : [];
+        if (listParams.isEmpty) throw Exception('Invalid parameters');
+        
+        // This is a placeholder. Real implementation needs Web3Client.
+        throw Exception('Send transaction via WalletConnect is currently not supported. Please use the Send feature in the app.');
+      } else if (request.method == 'eth_signTransaction') {
+         // Should sign and return raw transaction
+         throw Exception('Sign transaction not implemented.');
+      } else if (request.method.startsWith('eth_signTypedData')) {
+        // Handle typed data
+         throw Exception('Sign typed data not implemented.');
+      } else {
+        throw Exception('Unsupported method: ${request.method}');
+      }
+
+      await _service.approveRequest(
+         topic: request.sessionId,
+         requestId: int.parse(request.id),
+         result: result,
+      );
+      
+      final pendingRequests = state.pendingRequests.where((r) => r.id != requestId).toList();
+      state = state.copyWith(pendingRequests: pendingRequests);
+      
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Request failed: $e');
+    }
   }
 
   /// Reject a pending request
-  void rejectRequest(String requestId) {
-    final pendingRequests = state.pendingRequests
-        .where((r) => r.id != requestId)
-        .toList();
-
+  Future<void> rejectRequest(String requestId) async {
+    final request = state.pendingRequests.firstWhere((r) => r.id == requestId);
+    
+    await _service.rejectRequest(
+      topic: request.sessionId,
+      requestId: int.parse(request.id),
+      error: Errors.getSdkError(Errors.USER_REJECTED),
+    );
+    
+    final pendingRequests = state.pendingRequests.where((r) => r.id != requestId).toList();
     state = state.copyWith(pendingRequests: pendingRequests);
   }
-
-  /// Get session by ID
+  
+  // Getters for providers
   WalletSession? getSessionById(String sessionId) {
     try {
       return state.sessions.firstWhere((s) => s.id == sessionId);
@@ -248,7 +475,6 @@ class WalletConnectNotifier extends StateNotifier<WalletConnectState> {
     }
   }
 
-  /// Get requests for a specific session
   List<SessionRequest> getRequestsForSession(String sessionId) {
     return state.pendingRequests
         .where((r) => r.sessionId == sessionId)
@@ -259,7 +485,9 @@ class WalletConnectNotifier extends StateNotifier<WalletConnectState> {
 /// WalletConnect provider
 final walletConnectProvider =
     StateNotifierProvider<WalletConnectNotifier, WalletConnectState>((ref) {
-  return WalletConnectNotifier();
+  final service = ref.watch(walletConnectServiceProvider);
+  final walletLocalDataSource = ref.watch(walletLocalDataSourceProvider);
+  return WalletConnectNotifier(service, walletLocalDataSource);
 });
 
 /// Selected session provider

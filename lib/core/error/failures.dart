@@ -15,3 +15,8 @@ class ValidationFailure extends Failure {
 class StorageFailure extends Failure {
   const StorageFailure(super.message, {super.cause});
 }
+
+/// Failure representing network or blockchain API issues.
+class NetworkFailure extends Failure {
+  const NetworkFailure(super.message, {super.cause});
+}
