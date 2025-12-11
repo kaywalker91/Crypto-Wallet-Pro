@@ -14,12 +14,28 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../widgets/token_list_tile.dart';
 
+import '../../../../features/wallet_connect/presentation/providers/wallet_connect_provider.dart';
+
 /// Main dashboard page showing wallet balance and tokens
-class DashboardPage extends ConsumerWidget {
+class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends ConsumerState<DashboardPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize WalletConnect service when dashboard loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(walletConnectProvider);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final dashboardState = ref.watch(dashboardProvider);
     final selectedNetwork = ref.watch(selectedNetworkProvider);
 
@@ -40,10 +56,12 @@ class DashboardPage extends ConsumerWidget {
         leadingWidth: 140,
         actions: [
           IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () => context.push(Routes.history),
+          ),
+          IconButton(
             icon: const Icon(Icons.qr_code_scanner),
-            onPressed: () {
-              // TODO: Open QR scanner
-            },
+            onPressed: () => context.push(Routes.qrScanner),
           ),
           const SizedBox(width: 8),
         ],
@@ -81,6 +99,7 @@ class DashboardPage extends ConsumerWidget {
               // Action buttons
               ActionButtonsRow(
                 onSend: () => context.push(Routes.send),
+                onReceive: () => context.push(Routes.receive),
                 // TODO: Implement other actions
               ),
 

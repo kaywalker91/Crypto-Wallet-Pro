@@ -60,6 +60,9 @@ dependencies:
   crypto: ^3.0.3
   http: ^1.6.0
   walletconnect_flutter_v2: ^2.4.1
+  qr_flutter: ^4.1.0
+  share_plus: ^10.0.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

@@ -3,7 +3,7 @@ enum NetworkType { mainnet, sepolia }
 
 class EnvConfig {
   // TODO: Replace with your actual Alchemy API Key
-  static const String alchemyApiKey = 'YOUR_ALCHEMY_API_KEY';
+  static const String alchemyApiKey = 'q0iSL_KFpTorLWC2D6TST';
   
   // TODO: Replace with your WalletConnect Project ID (cloud.walletconnect.com)
   static const String walletConnectProjectId = 'b396378b9fc681d9b6e8b41787351e70';

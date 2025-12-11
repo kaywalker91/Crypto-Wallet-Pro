@@ -20,3 +20,8 @@ class StorageFailure extends Failure {
 class NetworkFailure extends Failure {
   const NetworkFailure(super.message, {super.cause});
 }
+
+class ServerFailure extends Failure {
+  const ServerFailure(super.message, {super.cause});
+}
+
