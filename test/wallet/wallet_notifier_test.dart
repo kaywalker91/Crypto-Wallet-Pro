@@ -132,7 +132,7 @@ void main() {
     createdAt: DateTime.utc(2024, 1, 1),
   );
 
-  ProviderContainer _buildContainer(FakeWalletRepository repository,
+  ProviderContainer buildContainer(FakeWalletRepository repository,
       {FakeAuthSessionService? authSessionService}) {
     final authSession = authSessionService ?? FakeAuthSessionService();
 
@@ -161,7 +161,7 @@ void main() {
       generatedMnemonic: 'foo bar',
       storedWallet: wallet,
     );
-    final container = _buildContainer(repository);
+    final container = buildContainer(repository);
 
     final state = await container.read(walletProvider.future);
 
@@ -176,7 +176,7 @@ void main() {
       storedWallet: wallet,
     );
     final authSession = FakeAuthSessionService();
-    final container = _buildContainer(repository, authSessionService: authSession);
+    final container = buildContainer(repository, authSessionService: authSession);
 
     await container.read(walletProvider.notifier).authenticate();
     final current = container.read(walletViewProvider);
@@ -192,7 +192,7 @@ void main() {
       generatedMnemonic: mnemonic,
       importedWallet: wallet,
     );
-    final container = _buildContainer(repository);
+    final container = buildContainer(repository);
 
     await container.read(walletProvider.notifier).generateNewWallet();
     var state = container.read(walletViewProvider);

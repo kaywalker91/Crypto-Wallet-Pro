@@ -24,6 +24,7 @@ class SendTransactionParams extends Equatable {
   final String senderAddress;
   final String recipientAddress;
   final BigInt amountInWei; // Value to send
+  final String? tokenAddress; // Optional: If sending ERC-20
   final GasEstimate gasEstimate;
   final String? privateKey; // Optional: If we want to sign directly, or we use repository internal signer
 
@@ -32,9 +33,10 @@ class SendTransactionParams extends Equatable {
      required this.recipientAddress,
     required this.amountInWei,
     required this.gasEstimate,
+    this.tokenAddress,
     this.privateKey,
   });
 
   @override
-  List<Object?> get props => [senderAddress, recipientAddress, amountInWei, gasEstimate, privateKey];
+  List<Object?> get props => [senderAddress, recipientAddress, amountInWei, gasEstimate, tokenAddress, privateKey];
 }

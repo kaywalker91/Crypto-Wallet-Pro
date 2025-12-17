@@ -18,12 +18,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
     required String senderAddress,
     required String recipientAddress,
     required BigInt amountInWei,
+    String? tokenAddress,
   }) async {
     try {
       final result = await _remoteDataSource.getGasEstimates(
         senderAddress: senderAddress,
         recipientAddress: recipientAddress,
         amountInWei: amountInWei,
+        tokenAddress: tokenAddress,
       );
       return Right(result);
     } catch (e) {

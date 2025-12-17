@@ -40,15 +40,20 @@
 
 ## 📸 스크린샷
 
-### 온보딩 및 설정
-| 온보딩 | 지갑 생성 | 보안 저장소 |
+### 온보딩 (Onboarding)
+| 보안 | dApps | NFT |
 |:---:|:---:|:---:|
-| <img src="assets/screenshots/03_onboarding_secure.png" width="200"/> | <img src="assets/screenshots/06_wallet_setup.png" width="200"/> | <img src="assets/screenshots/07_recovery_phrase.png" width="200"/> |
+| <img src="assets/screenshots/03_onboarding_secure.png" width="200"/> | <img src="assets/screenshots/04_onboarding_dapps.png" width="200"/> | <img src="assets/screenshots/05_onboarding_nft.png" width="200"/> |
 
-### 메인 화면
-| 대시보드 | NFT 갤러리 | dApp 연결 |
+### 지갑 설정 (Wallet Setup)
+| 지갑 생성 | 복구 구문 | 지갑 가져오기 |
 |:---:|:---:|:---:|
-| <img src="assets/screenshots/01_dashboard.png" width="200"/> | <img src="assets/screenshots/02_nft_gallery.png" width="200"/> | <img src="assets/screenshots/04_onboarding_dapps.png" width="200"/> |
+| <img src="assets/screenshots/06_wallet_setup.png" width="200"/> | <img src="assets/screenshots/07_recovery_phrase.png" width="200"/> | <img src="assets/screenshots/08_import_wallet.png" width="200"/> |
+
+### 메인 기능 (Main Features)
+| 대시보드 | NFT 갤러리 |
+|:---:|:---:|
+| <img src="assets/screenshots/01_dashboard.png" width="200"/> | <img src="assets/screenshots/02_nft_gallery.png" width="200"/> |
 
 ---
 

@@ -167,5 +167,8 @@ class AppTypography {
   static TextStyle get labelLarge => textTheme.labelLarge!;
   static TextStyle get labelMedium => textTheme.labelMedium!;
   static TextStyle get labelSmall => textTheme.labelSmall!;
+  static TextStyle get titleLarge => textTheme.titleLarge!;
+  static TextStyle get titleMedium => textTheme.titleMedium!;
+  static TextStyle get titleSmall => textTheme.titleSmall!;
   static TextStyle get caption => textTheme.bodySmall!;
 }

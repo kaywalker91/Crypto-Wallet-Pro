@@ -1,14 +1,15 @@
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/transaction_entity.dart';
 
-class TransactionListItem extends StatelessWidget {
+class TransactionTile extends StatelessWidget {
   final TransactionEntity transaction;
   final VoidCallback? onTap;
 
-  const TransactionListItem({
+  const TransactionTile({
     super.key,
     required this.transaction,
     this.onTap,

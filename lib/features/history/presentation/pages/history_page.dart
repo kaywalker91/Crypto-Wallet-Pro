@@ -1,17 +1,19 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../providers/history_provider.dart';
-import '../widgets/transaction_list_item.dart';
+import '../widgets/transaction_tile.dart';
 
 class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final historyState = ref.watch(historyProvider);
+    final historyState = ref.watch(historyNotifierProvider);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -29,7 +31,9 @@ class HistoryPage extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: () => ref.refresh(historyProvider.notifier).refresh(),
+            onPressed: () {
+               ref.read(historyNotifierProvider.notifier).refresh();
+            },
           ),
         ],
       ),
@@ -73,7 +77,7 @@ class HistoryPage extends ConsumerWidget {
                 itemCount: transactions.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  return TransactionListItem(transaction: transactions[index]);
+                  return TransactionTile(transaction: transactions[index]);
                 },
               );
             },
@@ -98,7 +102,7 @@ class HistoryPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
-                      onPressed: () => ref.refresh(historyProvider.notifier).refresh(),
+                      onPressed: () => ref.read(historyNotifierProvider.notifier).refresh(),
                       child: const Text('Retry'),
                     ),
                   ],

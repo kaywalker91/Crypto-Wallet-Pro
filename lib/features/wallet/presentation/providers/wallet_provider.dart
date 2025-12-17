@@ -2,7 +2,6 @@ import 'package:bip39/bip39.dart' as bip39;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../../../shared/services/biometric_service.dart';
-import '../../../../shared/services/secure_storage_service.dart';
 import '../../../../shared/services/auth_session_service.dart';
 import '../../../../shared/services/pin_service.dart';
 import '../../../../shared/providers/storage_providers.dart';
@@ -91,7 +90,7 @@ class WalletNotifier extends AsyncNotifier<WalletState> {
   late final ImportWallet _importWallet;
   late final GetStoredWallet _getStoredWallet;
   late final DeleteWallet _deleteWallet;
-  late final BiometricService _biometricService;
+
   late final AuthSessionService _authSessionService;
 
   @override
@@ -101,7 +100,7 @@ class WalletNotifier extends AsyncNotifier<WalletState> {
     _importWallet = ref.watch(importWalletUseCaseProvider);
     _getStoredWallet = ref.watch(getStoredWalletUseCaseProvider);
     _deleteWallet = ref.watch(deleteWalletUseCaseProvider);
-    _biometricService = ref.watch(biometricServiceProvider);
+
     _authSessionService = ref.watch(authSessionServiceProvider);
 
     final hasSession = await _authSessionService.hasValidSession();

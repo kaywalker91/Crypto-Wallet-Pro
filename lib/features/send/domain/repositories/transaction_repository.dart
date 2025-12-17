@@ -9,6 +9,7 @@ abstract class TransactionRepository {
     required String senderAddress,
     required String recipientAddress,
     required BigInt amountInWei,
+    String? tokenAddress,
   });
 
   /// Send transaction

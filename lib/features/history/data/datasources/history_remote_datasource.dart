@@ -1,80 +1,104 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+
+import 'package:dio/dio.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import '../../../../core/constants/env_config.dart';
-import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/dio_provider.dart';
 import '../models/transaction_model.dart';
 
+part 'history_remote_datasource.g.dart';
 
 abstract class HistoryRemoteDataSource {
-  Future<List<TransactionModel>> getTransfers({
+  Future<List<TransactionModel>> getHistory({
+    required String address,
     required NetworkType network,
-    String? fromAddress,
-    String? toAddress,
-    required String userAddressForParsing, // To determine sent/received type
   });
 }
 
 class HistoryRemoteDataSourceImpl implements HistoryRemoteDataSource {
-  final http.Client client;
+  final Dio _dio;
 
-  HistoryRemoteDataSourceImpl(this.client);
+  HistoryRemoteDataSourceImpl(this._dio);
 
   @override
-  Future<List<TransactionModel>> getTransfers({
+  Future<List<TransactionModel>> getHistory({
+    required String address,
     required NetworkType network,
-    String? fromAddress,
-    String? toAddress,
-    required String userAddressForParsing,
   }) async {
     final url = EnvConfig.getRpcUrl(network);
-    
-    final payload = {
-      "id": 1,
-      "jsonrpc": "2.0",
-      "method": "alchemy_getAssetTransfers",
-      "params": [
-        {
-          "fromBlock": "0x0",
-          "toBlock": "latest",
-          if (fromAddress != null) "fromAddress": fromAddress,
-          if (toAddress != null) "toAddress": toAddress,
-          "category": ["external", "erc20"],
-          "withMetadata": true,
-          "excludeZeroValue": true,
-          "maxCount": "0x3e8", // 1000
-          "order": "desc" // Alchemy specific? No, need to sort manually usually, but recent first is preferred if possible. Alchemy returns ascending by default.
-        }
-      ]
-    };
 
     try {
-      final response = await client.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(payload),
+      // 1. Fetch Sent Transfers (fromAddress = user)
+      final responseSent = await _dio.post(
+        url,
+        data: {
+          "id": 1,
+          "jsonrpc": "2.0",
+          "method": "alchemy_getAssetTransfers",
+          "params": [
+            {
+              "fromBlock": "0x0",
+              "toBlock": "latest",
+              "fromAddress": address,
+              "category": ["external", "erc20", "erc721", "erc1155"],
+              "withMetadata": true,
+              "excludeZeroValue": true,
+              "maxCount": "0x64" // 100
+            }
+          ]
+        },
+      );
+      
+      final sentTransfers = _parseTransfers(responseSent.data, address);
+
+      // 2. Fetch Received Transfers (toAddress = user)
+      final responseReceived = await _dio.post(
+        url,
+        data: {
+          "id": 1,
+          "jsonrpc": "2.0",
+          "method": "alchemy_getAssetTransfers",
+          "params": [
+            {
+              "fromBlock": "0x0",
+              "toBlock": "latest",
+              "toAddress": address,
+              "category": ["external", "erc20", "erc721", "erc1155"],
+              "withMetadata": true,
+              "excludeZeroValue": true,
+              "maxCount": "0x64" // 100
+            }
+          ]
+        },
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['error'] != null) {
-          throw ServerException();
-        }
+      final receivedTransfers = _parseTransfers(responseReceived.data, address);
 
-        final result = data['result'];
-        if (result == null || result['transfers'] == null) {
-          return [];
-        }
+      // 3. Combine and sort
+      final allTransfers = [...sentTransfers, ...receivedTransfers];
+      allTransfers.sort((a, b) => b.timestamp.compareTo(a.timestamp)); // Descending
+      
+      return allTransfers;
 
-        final transfers = (result['transfers'] as List)
-            .map((t) => TransactionModel.fromJson(t, userAddressForParsing))
-            .toList();
-            
-        return transfers;
-      } else {
-        throw ServerException();
-      }
     } catch (e) {
-      throw ServerException();
+      throw Exception('Failed to fetch transaction history: $e');
     }
   }
+
+  List<TransactionModel> _parseTransfers(Map<String, dynamic> data, String userAddress) {
+    if (data['result'] == null || data['result']['transfers'] == null) {
+      return [];
+    }
+
+    final transfers = data['result']['transfers'] as List;
+    return transfers
+        .map((t) => TransactionModel.fromJson(t, userAddress))
+        .toList();
+  }
+}
+
+@riverpod
+HistoryRemoteDataSource historyRemoteDataSource(HistoryRemoteDataSourceRef ref) {
+  final dio = ref.watch(dioProvider);
+  return HistoryRemoteDataSourceImpl(dio);
 }

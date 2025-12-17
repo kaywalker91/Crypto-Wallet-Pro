@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/nft.dart';
@@ -38,7 +39,7 @@ class NftDetailPage extends StatelessWidget {
                   // NFT name
                   _buildNftName(),
                   // Description
-                  if (nft.description != null && nft.description!.isNotEmpty) ...[
+                  if (nft.description.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _buildDescription(),
                   ],
@@ -74,37 +75,22 @@ class NftDetailPage extends StatelessWidget {
         background: Hero(
           tag: 'nft_${nft.contractAddress}_${nft.tokenId}',
           child: Container(
-            decoration: BoxDecoration(
-              color: nft.backgroundColor != null
-                  ? Color(
-                      int.parse(
-                            nft.backgroundColor!.replaceFirst('#', ''),
-                            radix: 16,
-                          ) |
-                          0xFF000000,
-                    )
-                  : AppColors.surfaceLight,
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceLight,
             ),
             child: nft.imageUrl.isNotEmpty
-                ? Image.network(
-                    nft.imageUrl,
+
+                ? CachedNetworkImage(
+                    imageUrl: nft.imageUrl,
                     fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                          color: AppColors.primary,
-                          strokeWidth: 2,
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return _buildImagePlaceholder();
-                    },
+                    placeholder: (context, url) => Center(
+                      child: CircularProgressIndicator(
+                        value: null,
+                        color: AppColors.primary,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => _buildImagePlaceholder(),
                   )
                 : _buildImagePlaceholder(),
           ),
@@ -152,18 +138,18 @@ class NftDetailPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: nft.isErc1155
+            color: nft.type == NftType.erc1155
                 ? AppColors.secondary.withAlpha(51) // 0.2 * 255
                 : AppColors.primary.withAlpha(51),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: nft.isErc1155 ? AppColors.secondary : AppColors.primary,
+              color: nft.type == NftType.erc1155 ? AppColors.secondary : AppColors.primary,
             ),
           ),
           child: Text(
-            nft.isErc1155 ? 'ERC-1155' : 'ERC-721',
+            nft.type == NftType.erc1155 ? 'ERC-1155' : 'ERC-721',
             style: TextStyle(
-              color: nft.isErc1155 ? AppColors.secondary : AppColors.primary,
+              color: nft.type == NftType.erc1155 ? AppColors.secondary : AppColors.primary,
               fontSize: 12,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
@@ -171,7 +157,7 @@ class NftDetailPage extends StatelessWidget {
           ),
         ),
         // Quantity badge for ERC-1155
-        if (nft.isErc1155 && nft.quantity > 1) ...[
+        if (nft.type == NftType.erc1155 && (nft.balance ?? 1) > 1) ...[
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -190,7 +176,7 @@ class NftDetailPage extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Owned: ${nft.quantity}',
+                  'Owned: ${nft.balance ?? 1}',
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
@@ -253,7 +239,7 @@ class NftDetailPage extends StatelessWidget {
 
   Widget _buildNftName() {
     return Text(
-      nft.name.isNotEmpty ? nft.name : '#${nft.tokenId}',
+      nft.title.isNotEmpty ? nft.title : '#${nft.tokenId}',
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 28,
@@ -277,7 +263,7 @@ class NftDetailPage extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          nft.description!,
+          nft.description,
           style: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 14,
@@ -329,7 +315,7 @@ class NftDetailPage extends StatelessWidget {
           _buildDetailRow(
             context,
             'Token Standard',
-            nft.isErc1155 ? 'ERC-1155' : 'ERC-721',
+            nft.type == NftType.erc1155 ? 'ERC-1155' : 'ERC-721',
           ),
           const SizedBox(height: 12),
           _buildDetailRow(
@@ -403,6 +389,8 @@ class NftDetailPage extends StatelessWidget {
     return Column(
       children: [
         // Primary action: View on OpenSea (if external URL exists)
+        // TODO: Enable when externalUrl is available
+        /*
         if (nft.externalUrl != null) ...[
           SizedBox(
             width: double.infinity,
@@ -424,6 +412,7 @@ class NftDetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
         ],
+        */
         // Secondary actions row
         Row(
           children: [

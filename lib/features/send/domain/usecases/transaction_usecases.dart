@@ -1,5 +1,4 @@
 
-import 'package:equatable/equatable.dart';
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/gas_estimate.dart';
@@ -27,11 +26,13 @@ class GetGasEstimates {
     required String senderAddress,
     required String recipientAddress,
     required BigInt amountInWei,
+    String? tokenAddress,
   }) {
     return _repository.getGasEstimates(
       senderAddress: senderAddress,
       recipientAddress: recipientAddress,
       amountInWei: amountInWei,
+      tokenAddress: tokenAddress,
     );
   }
 }

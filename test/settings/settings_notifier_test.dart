@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:crypto_wallet_pro/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:crypto_wallet_pro/features/settings/domain/entities/app_settings.dart';
@@ -32,7 +31,7 @@ class InMemorySecureStorage implements SecureStorageService {
 }
 
 void main() {
-  Future<void> _waitForLoaded(ProviderContainer container) async {
+  Future<void> waitForLoaded(ProviderContainer container) async {
     await pumpEventQueue();
     await Future.doWhile(() async {
       final state = container.read(settingsProvider);
@@ -59,7 +58,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    await _waitForLoaded(container);
+    await waitForLoaded(container);
     final state = container.read(settingsProvider);
 
     expect(state.settings.biometricEnabled, isTrue);
@@ -77,7 +76,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    await _waitForLoaded(container);
+    await waitForLoaded(container);
     await container.read(settingsProvider.notifier).toggleBiometric(true);
 
     final reloaded = await dataSource.loadSettings();

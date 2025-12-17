@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/nft.dart';
@@ -40,28 +41,14 @@ class NftGridItem extends StatelessWidget {
                   Hero(
                     tag: 'nft_${nft.contractAddress}_${nft.tokenId}',
                     child: Container(
-                      decoration: BoxDecoration(
-                        color: nft.backgroundColor != null
-                            ? Color(
-                                int.parse(
-                                      nft.backgroundColor!.replaceFirst('#', ''),
-                                      radix: 16,
-                                    ) |
-                                    0xFF000000,
-                              )
-                            : AppColors.surfaceLight,
-                      ),
+                      color: AppColors.surfaceLight,
                       child: nft.imageUrl.isNotEmpty
-                          ? Image.network(
-                              nft.imageUrl,
+                          ? CachedNetworkImage(
+                              imageUrl: nft.imageUrl,
                               fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return _buildLoadingPlaceholder();
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return _buildErrorPlaceholder();
-                              },
+                              placeholder: (context, url) => _buildLoadingPlaceholder(),
+                              errorWidget: (context, url, error) => _buildErrorPlaceholder(),
+                              fadeInDuration: const Duration(milliseconds: 300),
                             )
                           : _buildErrorPlaceholder(),
                     ),
@@ -73,7 +60,7 @@ class NftGridItem extends StatelessWidget {
                     child: _buildTokenTypeBadge(),
                   ),
                   // ERC-1155 quantity badge
-                  if (nft.isErc1155 && nft.quantity > 1)
+                  if (nft.type == NftType.erc1155 && (nft.balance ?? 1) > 1)
                     Positioned(
                       bottom: 8,
                       right: 8,
@@ -104,7 +91,7 @@ class NftGridItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   // NFT name
                   Text(
-                    nft.name.isNotEmpty ? nft.name : '#${nft.tokenId}',
+                    nft.title.isNotEmpty ? nft.title : '#${nft.tokenId}',
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
@@ -123,13 +110,13 @@ class NftGridItem extends StatelessWidget {
   }
 
   Widget _buildTokenTypeBadge() {
-    final isErc1155 = nft.tokenType == NftTokenType.erc1155;
+    final isErc1155 = nft.type == NftType.erc1155;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isErc1155
-            ? AppColors.secondary.withAlpha(230) // 0.9 * 255 = 230
-            : AppColors.primary.withAlpha(230), // 0.9 * 255 = 230
+            ? AppColors.secondary.withAlpha(230)
+            : AppColors.primary.withAlpha(230),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -148,7 +135,7 @@ class NftGridItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withAlpha(179), // 0.7 * 255 = 179
+        color: Colors.black.withAlpha(179),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
@@ -161,7 +148,7 @@ class NftGridItem extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            'x${nft.quantity}',
+            'x${nft.balance ?? 1}',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 11,

@@ -1,6 +1,5 @@
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:web3dart/credentials.dart';
 
 import 'package:crypto_wallet_pro/features/wallet/data/datasources/wallet_local_datasource.dart';
 import 'package:crypto_wallet_pro/shared/services/secure_storage_service.dart';

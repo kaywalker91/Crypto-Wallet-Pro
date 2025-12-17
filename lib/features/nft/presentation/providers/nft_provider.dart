@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../domain/entities/nft.dart';
+import '../../domain/repositories/nft_repository.dart';
+import '../../data/repositories/nft_repository_impl.dart';
+import '../../../wallet/presentation/providers/wallet_provider.dart';
 
 /// NFT gallery state
 class NftState {
@@ -42,15 +44,10 @@ class NftState {
       case NftFilter.all:
         return nfts;
       case NftFilter.erc721:
-        return nfts.where((nft) => nft.tokenType == NftTokenType.erc721).toList();
+        return nfts.where((nft) => nft.type == NftType.erc721).toList();
       case NftFilter.erc1155:
-        return nfts.where((nft) => nft.tokenType == NftTokenType.erc1155).toList();
+        return nfts.where((nft) => nft.type == NftType.erc1155).toList();
     }
-  }
-
-  /// Get unique collection names
-  List<String> get collections {
-    return nfts.map((nft) => nft.collectionName).toSet().toList()..sort();
   }
 
   /// Total NFT count
@@ -58,11 +55,11 @@ class NftState {
 
   /// ERC-721 count
   int get erc721Count =>
-      nfts.where((nft) => nft.tokenType == NftTokenType.erc721).length;
+      nfts.where((nft) => nft.type == NftType.erc721).length;
 
   /// ERC-1155 count
   int get erc1155Count =>
-      nfts.where((nft) => nft.tokenType == NftTokenType.erc1155).length;
+      nfts.where((nft) => nft.type == NftType.erc1155).length;
 }
 
 /// NFT filter options
@@ -74,22 +71,37 @@ enum NftFilter {
 
 /// NFT state notifier for managing gallery state
 class NftNotifier extends StateNotifier<NftState> {
-  NftNotifier() : super(const NftState(isLoading: true)) {
-    _loadMockData();
+  final NftRepository _repository;
+  final String? _ownerAddress;
+
+  NftNotifier(this._repository, this._ownerAddress) : super(const NftState(isLoading: true)) {
+    loadNfts();
   }
 
-  /// Load mock NFT data (simulates API call)
-  Future<void> _loadMockData() async {
-    try {
-      // Simulate network delay
-      await Future.delayed(const Duration(milliseconds: 1500));
+  /// Load NFT data from repository
+  Future<void> loadNfts() async {
+    if (_ownerAddress == null) {
+      state = state.copyWith(isLoading: false, error: 'Wallet not connected');
+      return;
+    }
 
-      state = NftState(
-        nfts: MockNfts.all,
-        isLoading: false,
+    try {
+      state = state.copyWith(isLoading: true, clearError: true);
+      
+      final result = await _repository.getNfts(_ownerAddress);
+      
+      result.fold(
+        (failure) => state = state.copyWith(
+          isLoading: false,
+          error: failure.message,
+        ),
+        (nfts) => state = state.copyWith(
+          isLoading: false,
+          nfts: nfts,
+        ),
       );
     } catch (e) {
-      state = NftState(
+      state = state.copyWith(
         isLoading: false,
         error: 'Failed to load NFTs: $e',
       );
@@ -98,8 +110,7 @@ class NftNotifier extends StateNotifier<NftState> {
 
   /// Refresh NFT list
   Future<void> refresh() async {
-    state = state.copyWith(isLoading: true, clearError: true);
-    await _loadMockData();
+    await loadNfts();
   }
 
   /// Select an NFT for detail view
@@ -133,7 +144,9 @@ class NftNotifier extends StateNotifier<NftState> {
 
 /// NFT provider
 final nftProvider = StateNotifierProvider<NftNotifier, NftState>((ref) {
-  return NftNotifier();
+  final repository = ref.watch(nftRepositoryProvider);
+  final walletState = ref.watch(walletViewProvider);
+  return NftNotifier(repository, walletState.wallet?.address);
 });
 
 /// Selected NFT provider (for detail page navigation)
@@ -149,11 +162,6 @@ final nftFilterProvider = Provider<NftFilter>((ref) {
 /// Filtered NFTs provider
 final filteredNftsProvider = Provider<List<Nft>>((ref) {
   return ref.watch(nftProvider).filteredNfts;
-});
-
-/// NFT collections provider
-final nftCollectionsProvider = Provider<List<String>>((ref) {
-  return ref.watch(nftProvider).collections;
 });
 
 /// NFT loading state provider

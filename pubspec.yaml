@@ -63,6 +63,9 @@ dependencies:
   qr_flutter: ^4.1.0
   share_plus: ^10.0.0
   intl: ^0.20.2
+  flutter_dotenv: ^6.0.0
+  dio: ^5.9.0
+  cached_network_image: ^3.4.0
 
 dev_dependencies:
   flutter_test:
@@ -95,6 +98,7 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/animations/
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

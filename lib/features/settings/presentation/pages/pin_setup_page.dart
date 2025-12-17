@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/gradient_button.dart';
-import '../../../../shared/services/pin_service.dart';
 import '../../../wallet/presentation/providers/wallet_provider.dart';
 
 class PinSetupPage extends ConsumerStatefulWidget {

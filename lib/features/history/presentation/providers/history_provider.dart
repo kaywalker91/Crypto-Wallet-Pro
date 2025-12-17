@@ -1,35 +1,19 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
+
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import '../../../../shared/providers/network_provider.dart';
 import '../../../wallet/presentation/providers/wallet_provider.dart';
-import '../../data/datasources/history_remote_datasource.dart';
-import '../../data/repositories/history_repository_impl.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/usecases/get_transaction_history.dart';
 
-// DI
-final historyRemoteDataSourceProvider = Provider<HistoryRemoteDataSource>((ref) {
-  return HistoryRemoteDataSourceImpl(http.Client());
-});
+part 'history_provider.g.dart';
 
-final historyRepositoryProvider = Provider((ref) {
-  return HistoryRepositoryImpl(ref.watch(historyRemoteDataSourceProvider));
-});
-
-final getTransactionHistoryUseCaseProvider = Provider((ref) {
-  return GetTransactionHistory(ref.watch(historyRepositoryProvider));
-});
-
-// Notifier
-class HistoryNotifier extends AsyncNotifier<List<TransactionEntity>> {
-  late GetTransactionHistory _getHistory;
-
+@riverpod
+class HistoryNotifier extends _$HistoryNotifier {
   @override
-  Future<List<TransactionEntity>> build() async {
-    _getHistory = ref.watch(getTransactionHistoryUseCaseProvider);
-    
-    final walletState = ref.watch(walletProvider);
-    final wallet = walletState.valueOrNull?.wallet;
+  FutureOr<List<TransactionEntity>> build() async {
+    final walletState = await ref.watch(walletProvider.future);
+    final wallet = walletState.wallet;
     final network = ref.watch(selectedNetworkProvider);
 
     if (wallet == null) {
@@ -40,23 +24,19 @@ class HistoryNotifier extends AsyncNotifier<List<TransactionEntity>> {
   }
 
   Future<List<TransactionEntity>> _fetchHistory(String address, dynamic network) async {
-    final result = await _getHistory(address: address, network: network);
+    final getHistory = ref.read(getTransactionHistoryUseCaseProvider);
+    final result = await getHistory(address: address, network: network);
+    
     return result.fold(
-      (failure) => throw failure,
+      (failure) => throw failure, // AsyncValue will catch this
       (history) => history,
     );
   }
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final wallet = ref.read(walletViewProvider).wallet;
-      final network = ref.read(selectedNetworkProvider);
-      if (wallet == null) return [];
-      return _fetchHistory(wallet.address, network);
-    });
+    // Invalidate self to trigger rebuild
+    ref.invalidateSelf();
+    await future;
   }
 }
-
-final historyProvider =
-    AsyncNotifierProvider<HistoryNotifier, List<TransactionEntity>>(HistoryNotifier.new);

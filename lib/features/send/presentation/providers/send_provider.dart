@@ -1,11 +1,10 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/error/failures.dart';
 import '../../domain/entities/gas_estimate.dart';
 import '../../domain/usecases/transaction_usecases.dart';
 import '../../data/repositories/transaction_repository_impl.dart';
 import '../../../wallet/presentation/providers/wallet_provider.dart';
-import '../../../wallet/data/datasources/wallet_local_datasource.dart';
+import '../../../dashboard/domain/entities/token.dart';
 
 // UseCases Providers
 final sendTransactionUseCaseProvider = Provider<SendTransaction>((ref) {
@@ -66,6 +65,7 @@ class SendNotifier extends StateNotifier<SendState> {
   Future<void> estimateGas({
     required String recipientAddress,
     required String amountEth,
+    Token? token,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
 
@@ -73,12 +73,14 @@ class SendNotifier extends StateNotifier<SendState> {
       final walletState = await _ref.read(walletProvider.future);
       if (walletState.wallet == null) throw Exception("Wallet not found");
 
-      final amountWei = BigInt.from(double.parse(amountEth) * 1e18);
+      final decimals = token?.decimals ?? 18;
+      final amountWei = BigInt.from(double.parse(amountEth) * BigInt.from(10).pow(decimals).toDouble());
 
       final result = await _getGasEstimates(
         senderAddress: walletState.wallet!.address,
         recipientAddress: recipientAddress,
         amountInWei: amountWei,
+        tokenAddress: token?.contractAddress,
       );
 
       result.fold(
@@ -97,6 +99,7 @@ class SendNotifier extends StateNotifier<SendState> {
   Future<bool> send({
     required String recipientAddress,
     required String amountEth,
+    Token? token,
   }) async {
     if (state.gasEstimates == null) return false;
 
@@ -106,7 +109,8 @@ class SendNotifier extends StateNotifier<SendState> {
       final walletState = await _ref.read(walletProvider.future);
       if (walletState.wallet == null) throw Exception("Wallet not found");
 
-      final amountWei = BigInt.from(double.parse(amountEth) * 1e18);
+      final decimals = token?.decimals ?? 18;
+      final amountWei = BigInt.from(double.parse(amountEth) * BigInt.from(10).pow(decimals).toDouble());
       final estimate = state.gasEstimates![state.selectedPriority]!;
 
       // Retrieve Private Key (In a real app, we should use Biometric Auth confirmation here)
@@ -120,6 +124,7 @@ class SendNotifier extends StateNotifier<SendState> {
         recipientAddress: recipientAddress,
         amountInWei: amountWei,
         gasEstimate: estimate,
+        tokenAddress: token?.contractAddress,
       );
 
       final result = await _sendTransaction(

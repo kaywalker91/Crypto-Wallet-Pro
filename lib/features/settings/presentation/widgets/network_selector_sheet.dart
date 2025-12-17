@@ -20,6 +20,7 @@ class NetworkSelectorSheet extends StatelessWidget {
   }) {
     return showModalBottomSheet<NetworkType>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => NetworkSelectorSheet(
         currentNetwork: currentNetwork,
@@ -69,7 +70,7 @@ class NetworkSelectorSheet extends StatelessWidget {
                   isSelected: network == currentNetwork,
                   onTap: () => onNetworkSelected(network),
                 )),
-            const SizedBox(height: 16),
+            const SizedBox(height: 32),
           ],
         ),
       ),

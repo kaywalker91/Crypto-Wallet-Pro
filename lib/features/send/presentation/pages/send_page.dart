@@ -9,6 +9,8 @@ import '../../../../core/theme/glassmorphism.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../domain/entities/gas_estimate.dart';
 import '../providers/send_provider.dart';
+import '../../../../features/dashboard/presentation/providers/dashboard_provider.dart';
+import '../../../../features/dashboard/domain/entities/token.dart';
 
 class SendPage extends ConsumerStatefulWidget {
   const SendPage({super.key});
@@ -21,6 +23,14 @@ class _SendPageState extends ConsumerState<SendPage> {
   final _addressController = TextEditingController();
   final _amountController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  Token? _selectedToken;
+
+  @override
+  void initState() {
+    super.initState();
+    // Default to ETH
+    _selectedToken = MockTokens.eth;
+  }
 
   @override
   void dispose() {
@@ -34,6 +44,7 @@ class _SendPageState extends ConsumerState<SendPage> {
       ref.read(sendProvider.notifier).estimateGas(
             recipientAddress: _addressController.text.trim(),
             amountEth: _amountController.text.trim(),
+            token: _selectedToken?.symbol == 'ETH' ? null : _selectedToken,
           );
     }
   }
@@ -42,6 +53,7 @@ class _SendPageState extends ConsumerState<SendPage> {
     final success = await ref.read(sendProvider.notifier).send(
           recipientAddress: _addressController.text.trim(),
           amountEth: _amountController.text.trim(),
+          token: _selectedToken?.symbol == 'ETH' ? null : _selectedToken,
         );
 
     if (success && mounted) {
@@ -97,6 +109,12 @@ class _SendPageState extends ConsumerState<SendPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Token Selection
+              Text('Asset', style: AppTypography.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              _buildTokenSelector(),
+              const SizedBox(height: 24),
+
               // Address Input
               Text('Recipient Address', style: AppTypography.textTheme.titleMedium),
               const SizedBox(height: 8),
@@ -135,12 +153,12 @@ class _SendPageState extends ConsumerState<SendPage> {
                   controller: _amountController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: '0.0',
-                    hintStyle: TextStyle(color: AppColors.textTertiary),
+                    hintStyle: const TextStyle(color: AppColors.textTertiary),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(16),
-                    suffixText: 'ETH',
+                    contentPadding: const EdgeInsets.all(16),
+                    suffixText: _selectedToken?.symbol ?? 'ETH',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -221,14 +239,17 @@ class _SendPageState extends ConsumerState<SendPage> {
                   ),
                   child: Column(
                     children: [
-                      Text(
-                        priority.name.toUpperCase(),
-                        style: TextStyle(
-                          color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                          child: Text(
+                            priority.name.toUpperCase(),
+                            style: TextStyle(
+                              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 4),
                       Text(
                         '${feeEth.toStringAsFixed(6)} ETH',
@@ -245,6 +266,53 @@ class _SendPageState extends ConsumerState<SendPage> {
           }).toList(),
         ),
       ],
+    );
+  }
+  Widget _buildTokenSelector() {
+    final dashboardState = ref.watch(dashboardProvider);
+    final allTokens = [MockTokens.eth, ...dashboardState.tokens];
+
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<Token>(
+          value: _selectedToken != null && allTokens.any((t) => t.symbol == _selectedToken!.symbol) 
+              ? allTokens.firstWhere((t) => t.symbol == _selectedToken!.symbol) 
+              : allTokens.first,
+          isExpanded: true,
+          dropdownColor: AppColors.cardBackground,
+          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
+          items: allTokens.map((token) {
+            return DropdownMenuItem<Token>(
+              value: token,
+              child: Row(
+                children: [
+                  CircleAvatar(
+                   backgroundColor: token.color.withOpacity(0.2),
+                   radius: 12,
+                   child: Text(token.symbol[0], style: TextStyle(color: token.color, fontSize: 10, fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(token.symbol, style: const TextStyle(color: AppColors.textPrimary)),
+                  const Spacer(),
+                  // Show balance if available (simple check)
+                  Text(
+                    token.symbol == 'ETH' 
+                        ? (dashboardState.walletBalance?.balanceEth ?? '') 
+                        : '${token.balance} ${token.symbol}', 
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          onChanged: (Token? newValue) {
+            setState(() {
+              _selectedToken = newValue;
+            });
+          },
+        ),
+      ),
     );
   }
 }

@@ -77,13 +77,13 @@ class ReceivePage extends ConsumerWidget {
                       ? QrImageView(
                           data: walletAddress,
                           version: QrVersions.auto,
-                          size: 240,
+                          size: MediaQuery.of(context).size.width * 0.6,
                           backgroundColor: Colors.white,
                         )
-                      : const SizedBox(
-                          width: 240,
-                          height: 240,
-                          child: Center(child: CircularProgressIndicator()),
+                      : SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.6,
+                          height: MediaQuery.of(context).size.width * 0.6,
+                          child: const Center(child: CircularProgressIndicator()),
                         ),
                 ),
                 
