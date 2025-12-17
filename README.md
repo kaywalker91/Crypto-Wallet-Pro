@@ -1,7 +1,5 @@
 # Crypto Wallet Pro
 
-![Project Banner](assets/screenshots/01_dashboard.png)
-
 **Crypto Wallet Pro**는 Flutter로 개발된 차세대 암호화폐 지갑 애플리케이션입니다. 강력한 보안, 현대적인 글래스모피즘(Glassmorphism) 디자인, 그리고 직관적인 사용자 경험을 제공합니다.
 
 ---
