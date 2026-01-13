@@ -100,7 +100,9 @@ class WalletLocalDataSourceImpl implements WalletLocalDataSource {
   @override
   Future<String?> getMnemonic() async {
     try {
-      await _ensureAuth();
+      // ✅ SECURITY: 인증은 Repository Layer에서 수행 (Defense-in-Depth)
+      // - 이중 인증 방지를 위해 DataSource에서는 인증 체크 제거
+      // - WalletRepositoryImpl.getStoredMnemonic()에서 인증 게이트 담당
       return _storage.read(StorageKeys.mnemonic);
     } catch (e) {
       throw StorageFailure('Failed to read mnemonic', cause: e);
@@ -110,6 +112,8 @@ class WalletLocalDataSourceImpl implements WalletLocalDataSource {
   @override
   Future<void> deleteMnemonic() async {
     try {
+      // ✅ SECURITY: 삭제 작업은 인증 유지 (민감 작업)
+      // - 실수로 삭제되는 것을 방지
       await _ensureAuth();
       await _storage.delete(StorageKeys.mnemonic);
     } catch (e) {

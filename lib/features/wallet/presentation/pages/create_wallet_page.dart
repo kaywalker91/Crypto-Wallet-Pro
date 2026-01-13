@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/security/widgets/secure_content_wrapper.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/glassmorphism.dart';
@@ -188,9 +189,11 @@ class _ShowMnemonicStepState extends ConsumerState<_ShowMnemonicStep> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
+    // Wrap entire content in SecureContentWrapper to prevent screenshots
+    return SecureContentWrapper(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
         children: [
           // Header
           Row(
@@ -317,6 +320,7 @@ class _ShowMnemonicStepState extends ConsumerState<_ShowMnemonicStep> {
           const SizedBox(height: 16),
         ],
       ),
+      ),
     );
   }
 }
@@ -365,9 +369,11 @@ class _ConfirmMnemonicStepState extends ConsumerState<_ConfirmMnemonicStep> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
+    // Wrap entire content in SecureContentWrapper to prevent screenshots
+    return SecureContentWrapper(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
         children: [
           // Header
           Row(
@@ -438,6 +444,7 @@ class _ConfirmMnemonicStepState extends ConsumerState<_ConfirmMnemonicStep> {
 
           const SizedBox(height: 16),
         ],
+      ),
       ),
     );
   }

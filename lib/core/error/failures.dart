@@ -25,3 +25,17 @@ class ServerFailure extends Failure {
   const ServerFailure(super.message, {super.cause});
 }
 
+/// Failure representing authentication issues.
+///
+/// 인증 실패 시 반환됩니다 (생체 인증, PIN 인증 등).
+class AuthenticationFailure extends Failure {
+  const AuthenticationFailure(super.message, {super.cause});
+}
+
+/// Failure representing cryptographic operations (encryption, decryption, key derivation).
+///
+/// 암호화/복호화 실패 시 반환됩니다.
+class CryptographyFailure extends Failure {
+  const CryptographyFailure(super.message, {super.cause});
+}
+

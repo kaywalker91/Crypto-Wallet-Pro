@@ -1,19 +1,23 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/gas_estimate.dart';
 import '../../domain/usecases/transaction_usecases.dart';
-import '../../data/repositories/transaction_repository_impl.dart';
 import '../../../wallet/presentation/providers/wallet_provider.dart';
+import '../../../wallet/domain/usecases/get_private_key.dart';
 import '../../../dashboard/domain/entities/token.dart';
+
+// ✅ CLEAN ARCHITECTURE: Repository Provider는 별도 파일로 분리
+// - Presentation Layer에서 Data Layer 직접 참조 제거
+// - send_repository_providers.dart에서 제공
+import 'send_repository_providers.dart';
 
 // UseCases Providers
 final sendTransactionUseCaseProvider = Provider<SendTransaction>((ref) {
-  final repository = ref.watch(transactionRepositoryProvider);
+  final repository = ref.watch(transactionRepositoryDomainProvider);
   return SendTransaction(repository);
 });
 
 final getGasEstimatesUseCaseProvider = Provider<GetGasEstimates>((ref) {
-  final repository = ref.watch(transactionRepositoryProvider);
+  final repository = ref.watch(transactionRepositoryDomainProvider);
   return GetGasEstimates(repository);
 });
 
@@ -54,11 +58,13 @@ class SendState {
 class SendNotifier extends StateNotifier<SendState> {
   final SendTransaction _sendTransaction;
   final GetGasEstimates _getGasEstimates;
+  final GetPrivateKey _getPrivateKey;
   final Ref _ref;
 
   SendNotifier(
     this._sendTransaction,
     this._getGasEstimates,
+    this._getPrivateKey,
     this._ref,
   ) : super(const SendState());
 
@@ -113,12 +119,6 @@ class SendNotifier extends StateNotifier<SendState> {
       final amountWei = BigInt.from(double.parse(amountEth) * BigInt.from(10).pow(decimals).toDouble());
       final estimate = state.gasEstimates![state.selectedPriority]!;
 
-      // Retrieve Private Key (In a real app, we should use Biometric Auth confirmation here)
-      final walletLocalDs = _ref.read(walletLocalDataSourceProvider);
-      final privateKey = await walletLocalDs.retrievePrivateKey(); // Need to expose this or similar
-
-      if (privateKey == null) throw Exception("Failed to retrieve private key");
-
       final params = SendTransactionParams(
         senderAddress: walletState.wallet!.address,
         recipientAddress: recipientAddress,
@@ -127,9 +127,21 @@ class SendNotifier extends StateNotifier<SendState> {
         tokenAddress: token?.contractAddress,
       );
 
-      final result = await _sendTransaction(
-        params: params,
-        privateKey: privateKey,
+      // ✅ SECURITY: Private Key 메모리 노출 최소화
+      // - 변수 스코프를 최소화하여 메모리 상주 시간 단축
+      // - fold 내부에서 직접 트랜잭션 실행으로 중간 변수 제거
+      final privateKeyResult = await _getPrivateKey();
+      final result = await privateKeyResult.fold(
+        (failure) async => throw Exception(failure.message),
+        (privateKey) async {
+          // Private Key를 최소 스코프 내에서만 사용
+          final txResult = await _sendTransaction(
+            params: params,
+            privateKey: privateKey,
+          );
+          // privateKey는 이 클로저 스코프 종료 시 참조 해제됨
+          return txResult;
+        },
       );
 
       return result.fold(
@@ -153,6 +165,7 @@ final sendProvider = StateNotifierProvider.autoDispose<SendNotifier, SendState>(
   return SendNotifier(
     ref.watch(sendTransactionUseCaseProvider),
     ref.watch(getGasEstimatesUseCaseProvider),
+    ref.watch(getPrivateKeyUseCaseProvider),
     ref,
   );
 });

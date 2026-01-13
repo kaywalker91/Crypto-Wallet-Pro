@@ -60,6 +60,11 @@ class FakeWalletRepository implements WalletRepository {
     return left(const StorageFailure('not implemented'));
   }
 
+  @override
+  Future<Either<Failure, String>> getPrivateKey() async {
+    return right('0x1234567890abcdef');
+  }
+
   Wallet _dummyWallet() => Wallet(
         address: '0x0001',
         createdAt: DateTime.utc(2024, 1, 1),

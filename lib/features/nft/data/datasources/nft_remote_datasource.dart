@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/constants/env_config.dart';
+import '../../../../core/constants/mock_config.dart';
 import '../../../../shared/providers/network_provider.dart';
 import '../../domain/entities/nft.dart';
 import '../../domain/entities/nft_attribute.dart';
+import 'mock_nft_datasource.dart';
 
 part 'nft_remote_datasource.g.dart';
 
@@ -106,7 +108,12 @@ class NftRemoteDataSourceImpl implements NftRemoteDataSource {
 
 @riverpod
 NftRemoteDataSource nftRemoteDataSource(NftRemoteDataSourceRef ref) {
+  // 목업 모드일 경우 MockNftDataSource 사용
+  if (MockConfig.useMockData || MockConfig.mockNft) {
+    return MockNftDataSource();
+  }
+
   final network = ref.watch(selectedNetworkProvider);
-  final dio = Dio(); 
+  final dio = Dio();
   return NftRemoteDataSourceImpl(dio, network);
 }

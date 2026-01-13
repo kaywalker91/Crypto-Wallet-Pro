@@ -3,8 +3,10 @@ import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/constants/env_config.dart';
+import '../../../../core/constants/mock_config.dart';
 import '../../../../core/network/dio_provider.dart';
 import '../models/transaction_model.dart';
+import 'mock_history_datasource.dart';
 
 part 'history_remote_datasource.g.dart';
 
@@ -99,6 +101,11 @@ class HistoryRemoteDataSourceImpl implements HistoryRemoteDataSource {
 
 @riverpod
 HistoryRemoteDataSource historyRemoteDataSource(HistoryRemoteDataSourceRef ref) {
+  // 목업 모드일 경우 MockHistoryDataSource 사용
+  if (MockConfig.useMockData || MockConfig.mockHistory) {
+    return MockHistoryDataSource();
+  }
+
   final dio = ref.watch(dioProvider);
   return HistoryRemoteDataSourceImpl(dio);
 }

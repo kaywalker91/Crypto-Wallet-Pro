@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/page_transitions.dart';
+import '../../../external_wallet/domain/entities/metamask_connection_status.dart';
+import '../../../external_wallet/presentation/providers/metamask_provider.dart';
+import '../../../external_wallet/presentation/widgets/metamask_connect_button.dart';
+import '../../../external_wallet/presentation/widgets/metamask_status_indicator.dart';
 import '../../domain/entities/wallet_session.dart';
 import '../providers/wallet_connect_provider.dart';
 import '../widgets/session_empty_state.dart';
@@ -178,39 +182,304 @@ class WalletConnectPage extends ConsumerWidget {
       );
     }
 
-    // Empty state
     final filteredSessions = state.filteredSessions;
-    if (filteredSessions.isEmpty) {
-      return SessionEmptyState(
-        isFiltered: state.filter != SessionFilter.all,
-        actionLabel: state.filter == SessionFilter.all ? 'Scan QR Code' : 'Show All',
-        onAction: () {
-          if (state.filter == SessionFilter.all) {
-            _openQrScanner(context, ref);
-          } else {
-            ref.read(walletConnectProvider.notifier).setFilter(SessionFilter.all);
-          }
-        },
-      );
-    }
 
-    // Sessions list
     return RefreshIndicator(
       onRefresh: () => ref.read(walletConnectProvider.notifier).refresh(),
       color: AppColors.primary,
       backgroundColor: AppColors.surface,
-      child: ListView.builder(
+      child: ListView(
         padding: const EdgeInsets.only(top: 8, bottom: 100),
-        itemCount: filteredSessions.length,
-        itemBuilder: (context, index) {
-          final session = filteredSessions[index];
-          return SessionListItem(
-            session: session,
-            onTap: () => _onSessionTap(context, ref, session),
-          );
-        },
+        children: [
+          // MetaMask Connection Section
+          _buildMetaMaskSection(context, ref),
+
+          const SizedBox(height: 16),
+
+          // Divider with label
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Expanded(child: Divider(color: AppColors.cardBorder)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    'dApp Sessions',
+                    style: TextStyle(
+                      color: AppColors.textTertiary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Expanded(child: Divider(color: AppColors.cardBorder)),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Sessions list or empty state
+          if (filteredSessions.isEmpty)
+            SessionEmptyState(
+              isFiltered: state.filter != SessionFilter.all,
+              actionLabel: state.filter == SessionFilter.all ? 'Scan QR Code' : 'Show All',
+              onAction: () {
+                if (state.filter == SessionFilter.all) {
+                  _openQrScanner(context, ref);
+                } else {
+                  ref.read(walletConnectProvider.notifier).setFilter(SessionFilter.all);
+                }
+              },
+            )
+          else
+            ...filteredSessions.map((session) => SessionListItem(
+              session: session,
+              onTap: () => _onSessionTap(context, ref, session),
+            )),
+        ],
       ),
     );
+  }
+
+  Widget _buildMetaMaskSection(BuildContext context, WidgetRef ref) {
+    final metaMaskState = ref.watch(metaMaskNotifierProvider);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.orange.shade900.withOpacity(0.3),
+              Colors.orange.shade800.withOpacity(0.1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.orange.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header row
+              Row(
+                children: [
+                  // MetaMask icon
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.account_balance_wallet,
+                      color: Colors.orange,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Title and subtitle
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'MetaMask',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Connect your external wallet',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Status indicator
+                  const MetaMaskStatusIndicator(showAddress: false, size: 10),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Connection content based on state
+              if (metaMaskState.status == MetaMaskConnectionStatus.connected &&
+                  metaMaskState.connection != null)
+                _buildConnectedContent(context, ref, metaMaskState)
+              else
+                _buildDisconnectedContent(context, ref, metaMaskState),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConnectedContent(BuildContext context, WidgetRef ref, MetaMaskState state) {
+    final connection = state.connection!;
+
+    return Column(
+      children: [
+        // Connected wallet info
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              // Chain icon
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.check_circle,
+                  color: AppColors.success,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Address and chain
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      connection.abbreviatedAddress,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _chainName(connection.chainId),
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Disconnect button
+              TextButton(
+                onPressed: () => ref.read(metaMaskNotifierProvider.notifier).disconnect(),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                child: const Text('Disconnect'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDisconnectedContent(BuildContext context, WidgetRef ref, MetaMaskState state) {
+    return Column(
+      children: [
+        // Error message if any
+        if (state.status == MetaMaskConnectionStatus.error && state.errorMessage != null)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: AppColors.error.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.error.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.error_outline, color: AppColors.error, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    state.errorMessage!,
+                    style: TextStyle(color: AppColors.error, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+        // Connect button
+        SizedBox(
+          width: double.infinity,
+          child: MetaMaskConnectButton(
+            chainId: 1,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onConnected: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Successfully connected to MetaMask!'),
+                  backgroundColor: AppColors.success,
+                ),
+              );
+            },
+            onError: (error) {
+              // Error is displayed in the card
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _chainName(int chainId) {
+    switch (chainId) {
+      case 1:
+        return 'Ethereum Mainnet';
+      case 5:
+        return 'Goerli Testnet';
+      case 11155111:
+        return 'Sepolia Testnet';
+      case 137:
+        return 'Polygon';
+      case 42161:
+        return 'Arbitrum One';
+      case 10:
+        return 'Optimism';
+      case 8453:
+        return 'Base';
+      case 56:
+        return 'BNB Chain';
+      default:
+        return 'Chain $chainId';
+    }
   }
 
   void _onSessionTap(BuildContext context, WidgetRef ref, WalletSession session) {

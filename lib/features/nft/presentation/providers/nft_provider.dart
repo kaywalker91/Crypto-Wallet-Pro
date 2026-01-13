@@ -1,8 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/nft.dart';
-import '../../domain/repositories/nft_repository.dart';
-import '../../data/repositories/nft_repository_impl.dart';
+import '../../domain/usecases/get_nfts.dart';
 import '../../../wallet/presentation/providers/wallet_provider.dart';
+import 'nft_repository_providers.dart';
+
+// ============================================================================
+// Use Case Providers
+// ============================================================================
+
+/// GetNfts Use Case Provider
+final getNftsUseCaseProvider = Provider<GetNfts>((ref) {
+  return GetNfts(ref.watch(nftRepositoryDomainProvider));
+});
+
+// ============================================================================
+// State
+// ============================================================================
 
 /// NFT gallery state
 class NftState {
@@ -69,16 +82,20 @@ enum NftFilter {
   erc1155,
 }
 
+// ============================================================================
+// Notifier
+// ============================================================================
+
 /// NFT state notifier for managing gallery state
 class NftNotifier extends StateNotifier<NftState> {
-  final NftRepository _repository;
+  final GetNfts _getNfts;
   final String? _ownerAddress;
 
-  NftNotifier(this._repository, this._ownerAddress) : super(const NftState(isLoading: true)) {
+  NftNotifier(this._getNfts, this._ownerAddress) : super(const NftState(isLoading: true)) {
     loadNfts();
   }
 
-  /// Load NFT data from repository
+  /// Load NFT data using Use Case
   Future<void> loadNfts() async {
     if (_ownerAddress == null) {
       state = state.copyWith(isLoading: false, error: 'Wallet not connected');
@@ -88,7 +105,8 @@ class NftNotifier extends StateNotifier<NftState> {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
       
-      final result = await _repository.getNfts(_ownerAddress);
+      // ✅ Use Case를 통해 NFT 조회
+      final result = await _getNfts(_ownerAddress);
       
       result.fold(
         (failure) => state = state.copyWith(
@@ -142,11 +160,16 @@ class NftNotifier extends StateNotifier<NftState> {
   }
 }
 
+// ============================================================================
+// Providers
+// ============================================================================
+
 /// NFT provider
 final nftProvider = StateNotifierProvider<NftNotifier, NftState>((ref) {
-  final repository = ref.watch(nftRepositoryProvider);
+  // ✅ Use Case를 통해 비즈니스 로직 실행
+  final getNfts = ref.watch(getNftsUseCaseProvider);
   final walletState = ref.watch(walletViewProvider);
-  return NftNotifier(repository, walletState.wallet?.address);
+  return NftNotifier(getNfts, walletState.wallet?.address);
 });
 
 /// Selected NFT provider (for detail page navigation)

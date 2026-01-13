@@ -45,5 +45,26 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>cryptowalletpro</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>cryptowalletpro</string>
+				<string>wc</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>metamask</string>
+		<string>wc</string>
+	</array>
+	<key>NSFaceIDUsageDescription</key>
+	<string>지갑 보안을 위해 Face ID가 필요합니다.</string>
 </dict>
 </plist>

@@ -6,6 +6,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/glassmorphism.dart';
 import '../../../../core/widgets/gradient_button.dart';
+// ✅ SECURITY: 스크린샷 방지 위젯 import
+import '../../../../core/security/widgets/secure_content_wrapper.dart';
 import '../providers/wallet_provider.dart';
 import '../widgets/mnemonic_input_grid.dart';
 
@@ -60,95 +62,98 @@ class _ImportWalletPageState extends ConsumerState<ImportWalletPage> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => context.pop(),
-                      icon: const Icon(
-                        Icons.arrow_back_ios_rounded,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Import Wallet',
-                        style: AppTypography.headlineSmall.copyWith(
+    // ✅ SECURITY: 니모닉 입력 화면 스크린샷 방지
+    return SecureContentWrapper(
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: AppColors.backgroundGradient,
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => context.pop(),
+                        icon: const Icon(
+                          Icons.arrow_back_ios_rounded,
                           color: AppColors.textPrimary,
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    const SizedBox(width: 48), // Balance the back button
-                  ],
-                ),
-              ),
-
-              // Content
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Info banner
-                      const ImportWalletInfo(),
-
-                      const SizedBox(height: 24),
-
-                      // Mnemonic input grid
-                      MnemonicInputGrid(
-                        words: _words,
-                        onWordsChanged: _onWordsChanged,
-                        wordCount: 12,
+                      Expanded(
+                        child: Text(
+                          'Import Wallet',
+                          style: AppTypography.headlineSmall.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-
-                      const SizedBox(height: 16),
-
-                      // Word count indicator
-                      _WordCountIndicator(
-                        filledCount: _words.where((w) => w.trim().isNotEmpty).length,
-                        totalCount: 12,
-                      ),
-
-                      // Error message
-                      if (error != null) ...[
-                        const SizedBox(height: 16),
-                        _ErrorBanner(message: error),
-                      ],
-
-                      const SizedBox(height: 24),
-
-                      // Security note
-                      const _SecurityNote(),
+                      const SizedBox(width: 48), // Balance the back button
                     ],
                   ),
                 ),
-              ),
 
-              // Import button
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-                child: GradientButton(
-                  text: 'Import Wallet',
-                  onPressed: _isValidMnemonic && !isLoading ? _importWallet : null,
-                  isLoading: isLoading,
-                  width: double.infinity,
-                  icon: Icons.download_rounded,
+                // Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Info banner
+                        const ImportWalletInfo(),
+
+                        const SizedBox(height: 24),
+
+                        // Mnemonic input grid
+                        MnemonicInputGrid(
+                          words: _words,
+                          onWordsChanged: _onWordsChanged,
+                          wordCount: 12,
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Word count indicator
+                        _WordCountIndicator(
+                          filledCount: _words.where((w) => w.trim().isNotEmpty).length,
+                          totalCount: 12,
+                        ),
+
+                        // Error message
+                        if (error != null) ...[
+                          const SizedBox(height: 16),
+                          _ErrorBanner(message: error),
+                        ],
+
+                        const SizedBox(height: 24),
+
+                        // Security note
+                        const _SecurityNote(),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
+
+                // Import button
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                  child: GradientButton(
+                    text: 'Import Wallet',
+                    onPressed: _isValidMnemonic && !isLoading ? _importWallet : null,
+                    isLoading: isLoading,
+                    width: double.infinity,
+                    icon: Icons.download_rounded,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

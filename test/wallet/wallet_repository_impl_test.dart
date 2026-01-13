@@ -2,8 +2,46 @@ import 'package:crypto_wallet_pro/core/error/failures.dart';
 import 'package:crypto_wallet_pro/features/wallet/data/datasources/wallet_local_datasource.dart';
 import 'package:crypto_wallet_pro/features/wallet/data/repositories/wallet_repository_impl.dart';
 import 'package:crypto_wallet_pro/features/wallet/domain/entities/wallet.dart';
+import 'package:crypto_wallet_pro/shared/services/auth_session_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:web3dart/credentials.dart' show EthPrivateKey;
+
+/// Mock AuthSessionService for testing
+/// 항상 인증 성공을 반환
+class MockAuthSessionService implements AuthSessionService {
+  @override
+  bool get authEnabled => true;
+
+  @override
+  Future<bool> hasValidSession() async => true;
+
+  @override
+  Future<bool> ensureAuthenticated({String reason = ''}) async => true;
+
+  @override
+  Future<void> markSessionValid() async {}
+
+  @override
+  Future<void> clearSession() async {}
+}
+
+/// Mock AuthSessionService that always fails authentication
+class _MockAuthSessionFailure implements AuthSessionService {
+  @override
+  bool get authEnabled => true;
+
+  @override
+  Future<bool> hasValidSession() async => false;
+
+  @override
+  Future<bool> ensureAuthenticated({String reason = ''}) async => false;
+
+  @override
+  Future<void> markSessionValid() async {}
+
+  @override
+  Future<void> clearSession() async {}
+}
 
 class FakeWalletLocalDataSource implements WalletLocalDataSource {
   FakeWalletLocalDataSource({
@@ -90,7 +128,8 @@ void main() {
       generatedMnemonic: 'random phrase',
       wallet: wallet,
     );
-    final repository = WalletRepositoryImpl(dataSource);
+    final authSession = MockAuthSessionService();
+    final repository = WalletRepositoryImpl(dataSource, authSession);
 
     final result = await repository.createWallet(mnemonic: mnemonic);
 
@@ -104,7 +143,8 @@ void main() {
       generatedMnemonic: mnemonic,
       wallet: wallet,
     );
-    final repository = WalletRepositoryImpl(dataSource);
+    final authSession = MockAuthSessionService();
+    final repository = WalletRepositoryImpl(dataSource, authSession);
 
     final result = await repository.getStoredMnemonic();
 
@@ -120,7 +160,8 @@ void main() {
       generatedMnemonic: mnemonic,
       wallet: wallet,
     )..throwable = Exception('boom');
-    final repository = WalletRepositoryImpl(dataSource);
+    final authSession = MockAuthSessionService();
+    final repository = WalletRepositoryImpl(dataSource, authSession);
 
     final result = await repository.createWallet();
 
@@ -128,6 +169,24 @@ void main() {
     result.match(
       (failure) => expect(failure.message, contains('boom')),
       (_) => fail('Expected failure'),
+    );
+  });
+
+  test('getPrivateKey returns AuthenticationFailure when not authenticated', () async {
+    final dataSource = FakeWalletLocalDataSource(
+      generatedMnemonic: mnemonic,
+      wallet: wallet,
+    );
+    // 인증 실패 Mock
+    final authSession = _MockAuthSessionFailure();
+    final repository = WalletRepositoryImpl(dataSource, authSession);
+
+    final result = await repository.getPrivateKey();
+
+    expect(result.isLeft(), isTrue);
+    result.match(
+      (failure) => expect(failure, isA<AuthenticationFailure>()),
+      (_) => fail('Expected authentication failure'),
     );
   });
 }

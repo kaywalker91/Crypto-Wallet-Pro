@@ -58,6 +58,7 @@ dependencies:
   bip39: ^1.0.6
   bip32: ^2.0.0
   crypto: ^3.0.3
+  pointycastle: ^3.9.1
   http: ^1.6.0
   walletconnect_flutter_v2: ^2.4.1
   qr_flutter: ^4.1.0
@@ -66,6 +67,9 @@ dependencies:
   flutter_dotenv: ^6.0.0
   dio: ^5.9.0
   cached_network_image: ^3.4.0
+  app_links: ^7.0.0
+  url_launcher: ^6.3.1
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +81,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+
+  # Testing
+  mockito: ^5.4.4
 
   # Code Generation
   riverpod_generator: ^2.3.9

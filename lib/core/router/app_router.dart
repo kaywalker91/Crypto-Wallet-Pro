@@ -12,6 +12,7 @@ import '../../features/send/presentation/pages/send_page.dart';
 import '../../features/receive/presentation/pages/receive_page.dart';
 import '../../features/history/presentation/pages/history_page.dart';
 import '../../features/wallet_connect/presentation/pages/qr_scanner_page.dart';
+import '../../features/external_wallet/presentation/pages/connect_external_wallet_page.dart';
 
 /// Application router configuration
 /// Uses GoRouter for declarative routing
@@ -212,6 +213,27 @@ class AppRouter {
           },
         ),
       ),
+
+      // Connect External Wallet (MetaMask)
+      GoRoute(
+        path: '/connect-external-wallet',
+        name: 'connectExternalWallet',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const ConnectExternalWalletPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0.0, 1.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
+            var tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        ),
+      ),
     ],
   );
 }
@@ -231,4 +253,5 @@ class Routes {
   static const String receive = '/receive';
   static const String history = '/history';
   static const String qrScanner = '/qr-scanner';
+  static const String connectExternalWallet = '/connect-external-wallet';
 }

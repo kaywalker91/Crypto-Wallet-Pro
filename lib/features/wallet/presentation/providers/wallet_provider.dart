@@ -1,110 +1,33 @@
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:local_auth/local_auth.dart';
-import '../../../../shared/services/biometric_service.dart';
-import '../../../../shared/services/auth_session_service.dart';
-import '../../../../shared/services/pin_service.dart';
-import '../../../../shared/providers/storage_providers.dart';
-import '../../../settings/presentation/providers/settings_provider.dart';
-import '../../data/datasources/wallet_local_datasource.dart';
-import '../../data/repositories/wallet_repository_impl.dart';
-import '../../domain/entities/wallet.dart';
-import '../../domain/repositories/wallet_repository.dart';
-import '../../domain/usecases/create_wallet.dart';
-import '../../domain/usecases/delete_wallet.dart';
-import '../../domain/usecases/generate_mnemonic.dart';
-import '../../domain/usecases/get_stored_wallet.dart';
-import '../../domain/usecases/import_wallet.dart';
 
-/// Wallet creation step enum
-enum WalletCreationStep {
-  /// Initial step - choose create or import
-  intro,
+// 분리된 파일들 import
+import 'wallet_state.dart';
+import 'wallet_service_providers.dart';
+import 'wallet_usecase_providers.dart';
 
-  /// Show generated mnemonic to user
-  showMnemonic,
+// Re-export for backward compatibility
+export 'wallet_state.dart';
+export 'wallet_service_providers.dart';
+export 'wallet_usecase_providers.dart';
 
-  /// User confirms mnemonic backup
-  confirmMnemonic,
-
-  /// Wallet creation complete
-  complete,
-}
-
-/// Wallet state
-class WalletState {
-  final Wallet? wallet;
-  final String? generatedMnemonic;
-  final List<String> mnemonicWords;
-  final bool isLoading;
-  final String? error;
-  final WalletCreationStep currentStep;
-  final bool mnemonicBackupConfirmed;
-  final bool isAuthenticated;
-
-  const WalletState({
-    this.wallet,
-    this.generatedMnemonic,
-    this.mnemonicWords = const [],
-    this.isLoading = false,
-    this.error,
-    this.currentStep = WalletCreationStep.intro,
-    this.mnemonicBackupConfirmed = false,
-    this.isAuthenticated = false,
-  });
-
-  /// Check if wallet exists
-  bool get hasWallet => wallet != null;
-
-  /// Check if mnemonic is generated
-  bool get hasMnemonic => generatedMnemonic != null && mnemonicWords.isNotEmpty;
-
-  WalletState copyWith({
-    Wallet? wallet,
-    String? generatedMnemonic,
-    List<String>? mnemonicWords,
-    bool? isLoading,
-    String? error,
-    WalletCreationStep? currentStep,
-    bool? mnemonicBackupConfirmed,
-    bool? isAuthenticated,
-  }) {
-    return WalletState(
-      wallet: wallet ?? this.wallet,
-      generatedMnemonic: generatedMnemonic ?? this.generatedMnemonic,
-      mnemonicWords: mnemonicWords ?? this.mnemonicWords,
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      currentStep: currentStep ?? this.currentStep,
-      mnemonicBackupConfirmed:
-          mnemonicBackupConfirmed ?? this.mnemonicBackupConfirmed,
-      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-    );
-  }
-}
+// ============================================================================
+// Wallet Notifier
+// ============================================================================
 
 /// Wallet notifier for managing wallet state
+/// 
+/// 지갑 생성, 가져오기, 삭제 등의 상태를 관리합니다.
+/// Use Case 패턴을 사용하여 비즈니스 로직을 Domain Layer에 위임합니다.
 class WalletNotifier extends AsyncNotifier<WalletState> {
-  late final GenerateMnemonic _generateMnemonic;
-  late final CreateWallet _createWallet;
-  late final ImportWallet _importWallet;
-  late final GetStoredWallet _getStoredWallet;
-  late final DeleteWallet _deleteWallet;
-
-  late final AuthSessionService _authSessionService;
-
   @override
   Future<WalletState> build() async {
-    _generateMnemonic = ref.watch(generateMnemonicUseCaseProvider);
-    _createWallet = ref.watch(createWalletUseCaseProvider);
-    _importWallet = ref.watch(importWalletUseCaseProvider);
-    _getStoredWallet = ref.watch(getStoredWalletUseCaseProvider);
-    _deleteWallet = ref.watch(deleteWalletUseCaseProvider);
+    final generateMnemonic = ref.watch(generateMnemonicUseCaseProvider);
+    final getStoredWallet = ref.watch(getStoredWalletUseCaseProvider);
+    final authSessionService = ref.watch(authSessionServiceProvider);
 
-    _authSessionService = ref.watch(authSessionServiceProvider);
-
-    final hasSession = await _authSessionService.hasValidSession();
-    final result = await _getStoredWallet();
+    final hasSession = await authSessionService.hasValidSession();
+    final result = await getStoredWallet();
     return result.match(
       (failure) => WalletState(
         wallet: null,
@@ -135,7 +58,8 @@ class WalletNotifier extends AsyncNotifier<WalletState> {
 
   /// Trigger biometric authentication before accessing secure storage.
   Future<bool> authenticate() async {
-    final success = await _authSessionService.ensureAuthenticated();
+    final authSessionService = ref.read(authSessionServiceProvider);
+    final success = await authSessionService.ensureAuthenticated();
     final current = _stateOrDefault();
     _setState(current.copyWith(isAuthenticated: success));
     return success;
@@ -143,7 +67,8 @@ class WalletNotifier extends AsyncNotifier<WalletState> {
 
   /// Mark the current session as authenticated (used by PIN fallback).
   Future<void> markAuthenticated() async {
-    await _authSessionService.markSessionValid();
+    final authSessionService = ref.read(authSessionServiceProvider);
+    await authSessionService.markSessionValid();
     final current = _stateOrDefault();
     _setState(current.copyWith(isAuthenticated: true));
   }
@@ -154,7 +79,8 @@ class WalletNotifier extends AsyncNotifier<WalletState> {
     _setState(current.copyWith(isLoading: true, error: null));
 
     try {
-      final mnemonicResult = await _generateMnemonic();
+      final generateMnemonic = ref.read(generateMnemonicUseCaseProvider);
+      final mnemonicResult = await generateMnemonic();
       mnemonicResult.match(
         (failure) => _setState(current.copyWith(
               isLoading: false,
@@ -202,7 +128,8 @@ class WalletNotifier extends AsyncNotifier<WalletState> {
 
     _setState(current.copyWith(isLoading: true, error: null));
 
-    final result = await _createWallet(mnemonic: mnemonic);
+    final createWallet = ref.read(createWalletUseCaseProvider);
+    final result = await createWallet(mnemonic: mnemonic);
     result.match(
       (failure) => _setState(current.copyWith(
         isLoading: false,
@@ -222,7 +149,8 @@ class WalletNotifier extends AsyncNotifier<WalletState> {
     final current = _stateOrDefault();
     _setState(current.copyWith(isLoading: true, error: null));
 
-    final result = await _importWallet(mnemonic);
+    final importWalletUseCase = ref.read(importWalletUseCaseProvider);
+    final result = await importWalletUseCase(mnemonic);
     result.match(
       (failure) => _setState(current.copyWith(
         isLoading: false,
@@ -248,7 +176,8 @@ class WalletNotifier extends AsyncNotifier<WalletState> {
     final current = _stateOrDefault();
     _setState(current.copyWith(isLoading: true, error: null));
 
-    final result = await _deleteWallet();
+    final deleteWalletUseCase = ref.read(deleteWalletUseCaseProvider);
+    final result = await deleteWalletUseCase();
     result.match(
       (failure) => _setState(current.copyWith(
         isLoading: false,
@@ -295,6 +224,10 @@ class WalletNotifier extends AsyncNotifier<WalletState> {
   }
 }
 
+// ============================================================================
+// Main Providers
+// ============================================================================
+
 /// Wallet provider
 final walletProvider =
     AsyncNotifierProvider<WalletNotifier, WalletState>(WalletNotifier.new);
@@ -326,55 +259,3 @@ final walletCreationStepProvider = Provider<WalletCreationStep>((ref) {
   final walletState = _unwrapWalletState(ref.watch(walletProvider));
   return walletState.currentStep;
 });
-
-final biometricServiceProvider = Provider<BiometricService>((ref) {
-  return BiometricService(LocalAuthentication());
-});
-
-final authSessionServiceProvider = Provider<AuthSessionService>((ref) {
-  final storage = ref.watch(secureStorageServiceProvider);
-  final biometric = ref.watch(biometricServiceProvider);
-  final settings = ref.watch(settingsProvider).settings;
-  final authEnabled = settings.biometricEnabled || settings.pinEnabled;
-  return AuthSessionService(
-    storage,
-    biometric,
-    authEnabled: authEnabled,
-  );
-});
-
-final pinServiceProvider = Provider<PinService>((ref) {
-  final storage = ref.watch(secureStorageServiceProvider);
-  return PinService(storage);
-});
-
-/// Lazy check for whether a PIN is set.
-final hasPinProvider = FutureProvider<bool>((ref) async {
-  final pinService = ref.watch(pinServiceProvider);
-  return pinService.hasPin();
-});
-final walletLocalDataSourceProvider = Provider<WalletLocalDataSource>((ref) {
-  final storage = ref.watch(secureStorageServiceProvider);
-  final authSession = ref.watch(authSessionServiceProvider);
-  return WalletLocalDataSourceImpl(storage, authSession);
-});
-
-final walletRepositoryProvider = Provider<WalletRepository>((ref) {
-  final local = ref.watch(walletLocalDataSourceProvider);
-  return WalletRepositoryImpl(local);
-});
-
-final createWalletUseCaseProvider =
-    Provider<CreateWallet>((ref) => CreateWallet(ref.watch(walletRepositoryProvider)));
-
-final generateMnemonicUseCaseProvider =
-    Provider<GenerateMnemonic>((ref) => GenerateMnemonic(ref.watch(walletRepositoryProvider)));
-
-final importWalletUseCaseProvider =
-    Provider<ImportWallet>((ref) => ImportWallet(ref.watch(walletRepositoryProvider)));
-
-final getStoredWalletUseCaseProvider =
-    Provider<GetStoredWallet>((ref) => GetStoredWallet(ref.watch(walletRepositoryProvider)));
-
-final deleteWalletUseCaseProvider =
-    Provider<DeleteWallet>((ref) => DeleteWallet(ref.watch(walletRepositoryProvider)));
