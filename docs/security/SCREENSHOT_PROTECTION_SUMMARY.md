@@ -192,7 +192,7 @@ SecureContentWrapperWithIndicator(
 
 ## Documentation
 
-1. **Implementation Guide**: `/docs/SCREENSHOT_PROTECTION_GUIDE.md`
+1. **Implementation Guide**: `/docs/security/SCREENSHOT_PROTECTION_GUIDE.md`
    - Detailed usage instructions
    - Platform-specific behavior
    - Advanced examples
@@ -203,7 +203,7 @@ SecureContentWrapperWithIndicator(
    - API documentation
    - Security best practices
 
-3. **This Summary**: `/docs/SCREENSHOT_PROTECTION_SUMMARY.md`
+3. **This Summary**: `/docs/security/SCREENSHOT_PROTECTION_SUMMARY.md`
    - High-level overview
    - Implementation status
    - Testing results
