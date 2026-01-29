@@ -257,11 +257,11 @@ class _ShowMnemonicStepState extends ConsumerState<_ShowMnemonicStep> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surfaceLight.withOpacity(0.3),
+                color: AppColors.surfaceLight.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: _hasConfirmedBackup
-                      ? AppColors.primary.withOpacity(0.5)
+                      ? AppColors.primary.withValues(alpha: 0.5)
                       : AppColors.cardBorder,
                 ),
               ),
@@ -506,8 +506,8 @@ class _VerificationSlotState extends State<_VerificationSlot> {
                 decoration: BoxDecoration(
                   color: hasSelected
                       ? (isCorrect ? AppColors.success : AppColors.error)
-                          .withOpacity(0.2)
-                      : AppColors.primary.withOpacity(0.2),
+                          .withValues(alpha: 0.2)
+                      : AppColors.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -547,8 +547,8 @@ class _VerificationSlotState extends State<_VerificationSlot> {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? (isCorrect ? AppColors.success : AppColors.error)
-                            .withOpacity(0.2)
-                        : AppColors.surfaceLight.withOpacity(0.5),
+                            .withValues(alpha: 0.2)
+                        : AppColors.surfaceLight.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
@@ -601,7 +601,7 @@ class _CompleteStep extends ConsumerWidget {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.2),
+              color: AppColors.success.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: const Icon(

@@ -9,7 +9,6 @@ import '../../error/failures.dart';
 import '../audit/audit_event_type.dart';
 import '../sync/secure_sync_protocol.dart';
 import '../sync/sync_config.dart';
-import '../sync/sync_conflict_resolver.dart';
 import '../sync/sync_payload.dart';
 import '../sync/sync_result.dart';
 import 'security_audit_logger.dart';
@@ -42,20 +41,17 @@ class RemoteSecuritySyncService {
   RemoteSecuritySyncService({
     required Dio dio,
     required SecureSyncProtocol syncProtocol,
-    required SyncConflictResolver conflictResolver,
     required SecurityAuditLogger auditLogger,
     required SecureStorageService secureStorage,
     required SyncConfig config,
   })  : _dio = dio,
         _syncProtocol = syncProtocol,
-        _conflictResolver = conflictResolver,
         _auditLogger = auditLogger,
         _secureStorage = secureStorage,
         _config = config;
 
   final Dio _dio;
   final SecureSyncProtocol _syncProtocol;
-  final SyncConflictResolver _conflictResolver;
   final SecurityAuditLogger _auditLogger;
   final SecureStorageService _secureStorage;
   final SyncConfig _config;

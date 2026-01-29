@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../domain/entities/wallet_session.dart';
 import '../providers/wallet_connect_provider.dart';
@@ -471,7 +473,7 @@ class SessionDetailPage extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.cardBorder),
       ),
@@ -482,10 +484,9 @@ class SessionDetailPage extends ConsumerWidget {
           const SizedBox(width: 8),
           Text(
             label,
-            style: const TextStyle(
+            style: AppTypography.textTheme.labelSmall?.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -530,12 +531,45 @@ class SessionDetailPage extends ConsumerWidget {
         onPressed: () => _showDisconnectConfirmation(context, ref),
         icon: const Icon(Icons.link_off_rounded),
         label: const Text('Disconnect'),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.error,
-          side: const BorderSide(color: AppColors.error),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        style: ButtonStyle(
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(vertical: 16),
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return AppColors.textDisabled;
+            }
+            if (states.contains(WidgetState.pressed)) {
+              return AppColors.error;
+            }
+            return AppColors.error;
+          }),
+          side: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return BorderSide(color: AppColors.cardBorder);
+            }
+            if (states.contains(WidgetState.pressed)) {
+              return const BorderSide(color: AppColors.error, width: 1.4);
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return BorderSide(color: AppColors.error.withValues(alpha: 0.8), width: 1.2);
+            }
+            return const BorderSide(color: AppColors.error);
+          }),
+          overlayColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.pressed)) {
+              return AppColors.error.withValues(alpha: 0.16);
+            }
+            if (states.contains(WidgetState.hovered) ||
+                states.contains(WidgetState.focused)) {
+              return AppColors.error.withValues(alpha: 0.1);
+            }
+            return null;
+          }),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         ),
       ),
@@ -561,16 +595,51 @@ class SessionDetailPage extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.textSecondary,
+            ),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               ref.read(walletConnectProvider.notifier).disconnectSession(session.id);
               Navigator.pop(context);
             },
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.error,
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return AppColors.surfaceLight;
+                }
+                if (states.contains(WidgetState.pressed)) {
+                  return AppColors.error.withValues(alpha: 0.9);
+                }
+                if (states.contains(WidgetState.hovered)) {
+                  return AppColors.error.withValues(alpha: 0.8);
+                }
+                return AppColors.error;
+              }),
+              foregroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return AppColors.textDisabled;
+                }
+                return Colors.white;
+              }),
+              overlayColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.pressed)) {
+                  return Colors.white.withValues(alpha: 0.16);
+                }
+                if (states.contains(WidgetState.hovered) ||
+                    states.contains(WidgetState.focused)) {
+                  return Colors.white.withValues(alpha: 0.1);
+                }
+                return null;
+              }),
+              shape: WidgetStatePropertyAll(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
             child: const Text('Disconnect'),
           ),
@@ -582,48 +651,69 @@ class SessionDetailPage extends ConsumerWidget {
   void _showOptionsSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.cardBorder,
-                  borderRadius: BorderRadius.circular(2),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.sheetMaxWidth),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBorder,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: context.horizontalPadding,
+                      ),
+                      leading: const Icon(Icons.refresh, color: AppColors.textSecondary),
+                      title: Text(
+                        'Refresh Session',
+                        style: AppTypography.textTheme.bodyLarge?.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        // TODO: Refresh session
+                      },
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: context.horizontalPadding,
+                      ),
+                      leading: const Icon(Icons.open_in_new, color: AppColors.textSecondary),
+                      title: Text(
+                        'Open dApp',
+                        style: AppTypography.textTheme.bodyLarge?.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        // TODO: Launch URL
+                      },
+                    ),
+                  ],
                 ),
               ),
-              ListTile(
-                leading: const Icon(Icons.refresh, color: AppColors.textSecondary),
-                title: const Text(
-                  'Refresh Session',
-                  style: TextStyle(color: AppColors.textPrimary),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Refresh session
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.open_in_new, color: AppColors.textSecondary),
-                title: const Text(
-                  'Open dApp',
-                  style: TextStyle(color: AppColors.textPrimary),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Launch URL
-                },
-              ),
-            ],
+            ),
           ),
         ),
       ),

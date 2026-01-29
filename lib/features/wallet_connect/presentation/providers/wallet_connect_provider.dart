@@ -2,6 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart' hide SessionRequest;
 import '../../data/services/wallet_connect_service.dart';
 import '../../domain/entities/wallet_session.dart';
@@ -61,7 +62,7 @@ class WalletConnectState {
 }
 
 @Riverpod(keepAlive: true)
-WalletConnectService walletConnectService(WalletConnectServiceRef ref) {
+WalletConnectService walletConnectService(Ref ref) {
   final service = WalletConnectService();
   service.initialize();
   return service;

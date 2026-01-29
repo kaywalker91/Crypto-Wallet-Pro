@@ -23,7 +23,7 @@ class SessionProposalDialog extends StatelessWidget {
     final metadata = proposal.params.proposer.metadata;
 
     return AlertDialog(
-      backgroundColor: AppColors.surfaceLight,
+      backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Column(
         children: [
@@ -35,13 +35,13 @@ class SessionProposalDialog extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             metadata.name,
-            style: AppTypography.titleLarge.copyWith(color: Colors.white),
+            style: AppTypography.titleLarge.copyWith(color: AppColors.textPrimary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             metadata.url,
-            style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodySmall.copyWith(color: AppColors.textTertiary),
             textAlign: TextAlign.center,
           ),
         ],
@@ -51,15 +51,16 @@ class SessionProposalDialog extends StatelessWidget {
         children: [
           Text(
             'Wants to connect to your wallet',
-            style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+            style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 16),
           // Simple account selection (auto-select first for now)
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.cardBorder),
             ),
             child: Row(
               children: [
@@ -68,7 +69,7 @@ class SessionProposalDialog extends StatelessWidget {
                 Expanded(
                   child: Text(
                     availableAccounts.isNotEmpty ? availableAccounts.first : 'No Account',
-                    style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+                    style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -80,14 +81,14 @@ class SessionProposalDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: onReject,
-          child: Text('Reject', style: AppTypography.buttonText.copyWith(color: AppColors.error)),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.error,
+          ),
+          child: const Text('Reject'),
         ),
         ElevatedButton(
           onPressed: () => onApprove(availableAccounts), // Approve with all accounts (simplified)
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-          ),
-          child: Text('Approve', style: AppTypography.buttonText.copyWith(color: AppColors.background)),
+          child: const Text('Approve'),
         ),
       ],
     );

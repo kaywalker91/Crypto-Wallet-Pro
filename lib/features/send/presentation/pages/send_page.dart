@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/theme/glassmorphism.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../domain/entities/gas_estimate.dart';
 import '../providers/send_provider.dart';
@@ -67,15 +66,46 @@ class _SendPageState extends ConsumerState<SendPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
-        title: const Text('Transaction Sent', style: TextStyle(color: AppColors.success)),
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.check_circle, color: AppColors.success),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Transaction Sent',
+              style: AppTypography.textTheme.titleLarge?.copyWith(color: AppColors.textPrimary),
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Your transaction has been broadcast successfully.', style: TextStyle(color: AppColors.textPrimary)),
+            Text(
+              'Your transaction has been broadcast successfully.',
+              style: AppTypography.textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ),
             const SizedBox(height: 12),
-            Text('Hash: ${txHash ?? ""}', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            Text(
+              'Hash',
+              style: AppTypography.textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              txHash ?? '-',
+              style: AppTypography.textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ),
           ],
         ),
         actions: [
@@ -106,6 +136,7 @@ class _SendPageState extends ConsumerState<SendPage> {
         padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -118,28 +149,26 @@ class _SendPageState extends ConsumerState<SendPage> {
               // Address Input
               Text('Recipient Address', style: AppTypography.textTheme.titleMedium),
               const SizedBox(height: 8),
-              GlassCard(
-                padding: EdgeInsets.zero,
-                child: TextFormField(
-                  controller: _addressController,
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: const InputDecoration(
-                    hintText: '0x...',
-                    hintStyle: TextStyle(color: AppColors.textTertiary),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(16),
-                    suffixIcon: Icon(Icons.qr_code_scanner, color: AppColors.primary),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter address';
-                    }
-                    if (!value.startsWith('0x') || value.length != 42) {
-                      return 'Invalid Ethereum address';
-                    }
-                    return null;
-                  },
+              TextFormField(
+                controller: _addressController,
+                textInputAction: TextInputAction.next,
+                style: AppTypography.textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textPrimary,
                 ),
+                decoration: const InputDecoration(
+                  hintText: '0x...',
+                  helperText: 'Only Ethereum addresses are supported.',
+                  suffixIcon: Icon(Icons.qr_code_scanner),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter address';
+                  }
+                  if (!value.startsWith('0x') || value.length != 42) {
+                    return 'Invalid Ethereum address';
+                  }
+                  return null;
+                },
               ),
 
               const SizedBox(height: 24),
@@ -147,29 +176,31 @@ class _SendPageState extends ConsumerState<SendPage> {
               // Amount Input
               Text('Amount (ETH)', style: AppTypography.textTheme.titleMedium),
               const SizedBox(height: 8),
-              GlassCard(
-                padding: EdgeInsets.zero,
-                child: TextFormField(
-                  controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    hintText: '0.0',
-                    hintStyle: const TextStyle(color: AppColors.textTertiary),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.all(16),
-                    suffixText: _selectedToken?.symbol ?? 'ETH',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter amount';
-                    }
-                    if (double.tryParse(value) == null) {
-                      return 'Invalid amount';
-                    }
-                    return null;
-                  },
+              TextFormField(
+                controller: _amountController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                textInputAction: TextInputAction.done,
+                style: AppTypography.textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textPrimary,
                 ),
+                decoration: InputDecoration(
+                  hintText: '0.0',
+                  helperText: 'Enter the amount to send.',
+                  suffixText: _selectedToken?.symbol ?? 'ETH',
+                  suffixStyle: AppTypography.textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter amount';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Invalid amount';
+                  }
+                  return null;
+                },
               ),
 
               const SizedBox(height: 32),
@@ -225,40 +256,46 @@ class _SendPageState extends ConsumerState<SendPage> {
             final feeEth = (estimate!.estimatedFeeInWei / BigInt.from(10).pow(18));
             
             return Expanded(
-              child: GestureDetector(
-                onTap: () => ref.read(sendProvider.notifier).selectPriority(priority),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary.withOpacity(0.2) : AppColors.glassSurface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? AppColors.primary : Colors.transparent,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => ref.read(sendProvider.notifier).selectPriority(priority),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary.withValues(alpha: 0.18)
+                          : AppColors.surfaceLight,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? AppColors.primary : AppColors.cardBorder,
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
+                    child: Column(
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
                           child: Text(
                             priority.name.toUpperCase(),
                             style: TextStyle(
                               color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w700,
                               fontSize: 12,
                             ),
                           ),
                         ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${feeEth.toStringAsFixed(6)} ETH',
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 10,
+                        const SizedBox(height: 4),
+                        Text(
+                          '${feeEth.toStringAsFixed(6)} ETH',
+                          style: TextStyle(
+                            color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                            fontSize: 11,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -272,15 +309,20 @@ class _SendPageState extends ConsumerState<SendPage> {
     final dashboardState = ref.watch(dashboardProvider);
     final allTokens = [MockTokens.eth, ...dashboardState.tokens];
 
-    return GlassCard(
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<Token>(
           value: _selectedToken != null && allTokens.any((t) => t.symbol == _selectedToken!.symbol) 
               ? allTokens.firstWhere((t) => t.symbol == _selectedToken!.symbol) 
               : allTokens.first,
           isExpanded: true,
-          dropdownColor: AppColors.cardBackground,
+          dropdownColor: AppColors.surface,
           icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
           items: allTokens.map((token) {
             return DropdownMenuItem<Token>(
@@ -288,19 +330,27 @@ class _SendPageState extends ConsumerState<SendPage> {
               child: Row(
                 children: [
                   CircleAvatar(
-                   backgroundColor: token.color.withOpacity(0.2),
+                   backgroundColor: token.color.withValues(alpha: 0.2),
                    radius: 12,
                    child: Text(token.symbol[0], style: TextStyle(color: token.color, fontSize: 10, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(width: 12),
-                  Text(token.symbol, style: const TextStyle(color: AppColors.textPrimary)),
+                  Text(
+                    token.symbol,
+                    style: AppTypography.textTheme.bodyLarge?.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const Spacer(),
                   // Show balance if available (simple check)
                   Text(
                     token.symbol == 'ETH' 
                         ? (dashboardState.walletBalance?.balanceEth ?? '') 
                         : '${token.balance} ${token.symbol}', 
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)
+                    style: AppTypography.textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),

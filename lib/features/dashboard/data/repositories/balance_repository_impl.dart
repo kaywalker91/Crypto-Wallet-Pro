@@ -1,6 +1,7 @@
 
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 import '../../../../core/error/failures.dart';
 import '../datasources/balance_remote_datasource.dart';
 import '../../domain/repositories/balance_repository.dart';
@@ -66,7 +67,6 @@ class BalanceRepositoryImpl implements BalanceRepository {
           } catch (e) {
             // If fetching fails for one token, we just skip it or log it
             // Don't fail the whole list
-            print('Failed to fetch balance for ${token.symbol}: $e');
           }
         }
       }
@@ -78,7 +78,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
 }
 
 @riverpod
-BalanceRepository balanceRepository(BalanceRepositoryRef ref) {
+BalanceRepository balanceRepository(Ref ref) {
   final remoteDataSource = ref.watch(balanceRemoteDataSourceProvider);
   return BalanceRepositoryImpl(remoteDataSource);
 }

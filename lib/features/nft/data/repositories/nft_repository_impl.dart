@@ -1,5 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/nft.dart';
 import '../../domain/repositories/nft_repository.dart';
@@ -24,7 +25,7 @@ class NftRepositoryImpl implements NftRepository {
 }
 
 @riverpod
-NftRepository nftRepository(NftRepositoryRef ref) {
+NftRepository nftRepository(Ref ref) {
   final remoteDataSource = ref.watch(nftRemoteDataSourceProvider);
   return NftRepositoryImpl(remoteDataSource);
 }

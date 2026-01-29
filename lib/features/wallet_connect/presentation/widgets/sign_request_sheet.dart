@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../domain/entities/session_request.dart';
 
@@ -26,16 +28,24 @@ class SignRequestSheet extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => SignRequestSheet(
-        request: request,
-        onApprove: () => Navigator.pop(context, true),
-        onReject: () => Navigator.pop(context, false),
+      builder: (context) => Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.sheetMaxWidth),
+          child: SignRequestSheet(
+            request: request,
+            onApprove: () => Navigator.pop(context, true),
+            onReject: () => Navigator.pop(context, false),
+          ),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final horizontal = context.horizontalPadding;
+
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -45,11 +55,12 @@ class SignRequestSheet extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
+        top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.fromLTRB(horizontal, 24, horizontal, 16),
               child: Column(
                 children: [
                   // Handle
@@ -84,11 +95,7 @@ class SignRequestSheet extends StatelessWidget {
                   // Title
                   Text(
                     request.typeLabel,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTypography.textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
                   // dApp info
@@ -104,10 +111,8 @@ class SignRequestSheet extends StatelessWidget {
                       ],
                       Text(
                         request.dapp.name,
-                        style: const TextStyle(
+                        style: AppTypography.textTheme.titleMedium?.copyWith(
                           color: AppColors.primary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -115,9 +120,8 @@ class SignRequestSheet extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     request.timeSinceRequest,
-                    style: const TextStyle(
+                    style: AppTypography.textTheme.bodySmall?.copyWith(
                       color: AppColors.textTertiary,
-                      fontSize: 13,
                     ),
                   ),
                 ],
@@ -126,7 +130,7 @@ class SignRequestSheet extends StatelessWidget {
             // Request details
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: EdgeInsets.symmetric(horizontal: horizontal),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -138,7 +142,7 @@ class SignRequestSheet extends StatelessWidget {
             ),
             // Warning and buttons
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.fromLTRB(horizontal, 12, horizontal, 24),
               child: Column(
                 children: [
                   // Warning for transactions
@@ -147,10 +151,10 @@ class SignRequestSheet extends StatelessWidget {
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withAlpha(26),
+                        color: AppColors.warning.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppColors.warning.withAlpha(77),
+                          color: AppColors.warning.withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -165,9 +169,8 @@ class SignRequestSheet extends StatelessWidget {
                           Expanded(
                             child: Text(
                               'This action will execute a blockchain transaction. Review carefully before approving.',
-                              style: TextStyle(
+                              style: AppTypography.textTheme.bodySmall?.copyWith(
                                 color: AppColors.warning,
-                                fontSize: 12,
                                 height: 1.4,
                               ),
                             ),
@@ -252,7 +255,7 @@ class SignRequestSheet extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColors.cardBorder,
@@ -279,10 +282,7 @@ class SignRequestSheet extends StatelessWidget {
             const Divider(color: AppColors.cardBorder, height: 24),
             const Text(
               'Data',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
             const SizedBox(height: 8),
             Container(
@@ -313,7 +313,7 @@ class SignRequestSheet extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColors.cardBorder,
@@ -323,11 +323,11 @@ class SignRequestSheet extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Message',
-            style: TextStyle(
+            style: AppTypography.textTheme.bodySmall?.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 12),
@@ -340,9 +340,8 @@ class SignRequestSheet extends StatelessWidget {
             ),
             child: Text(
               message.toString(),
-              style: const TextStyle(
+              style: AppTypography.textTheme.bodyMedium?.copyWith(
                 color: AppColors.textPrimary,
-                fontSize: 14,
                 height: 1.5,
               ),
             ),
@@ -357,7 +356,7 @@ class SignRequestSheet extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColors.cardBorder,
@@ -367,11 +366,11 @@ class SignRequestSheet extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Typed Data',
-            style: TextStyle(
+            style: AppTypography.textTheme.bodySmall?.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 12),
@@ -406,19 +405,17 @@ class SignRequestSheet extends StatelessWidget {
           width: 80,
           child: Text(
             label,
-            style: const TextStyle(
+            style: AppTypography.textTheme.bodySmall?.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 13,
             ),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
+            style: AppTypography.textTheme.bodySmall?.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.right,
           ),
@@ -433,14 +430,14 @@ class SignRequestSheet extends StatelessWidget {
         iconUrl,
         width: size,
         height: size,
-        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+        errorBuilder: (_, _, _) => const SizedBox.shrink(),
       );
     } else {
       return Image.asset(
         iconUrl,
         width: size,
         height: size,
-        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+        errorBuilder: (_, _, _) => const SizedBox.shrink(),
       );
     }
   }

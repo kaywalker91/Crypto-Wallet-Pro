@@ -28,12 +28,12 @@ class MnemonicWordChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: isHighlighted
-              ? AppColors.primary.withOpacity(0.2)
-              : AppColors.surfaceLight.withOpacity(0.5),
+              ? AppColors.primary.withValues(alpha: 0.2)
+              : AppColors.surfaceLight.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isHighlighted
-                ? AppColors.primary.withOpacity(0.5)
+                ? AppColors.primary.withValues(alpha: 0.5)
                 : AppColors.cardBorder,
             width: 1,
           ),
@@ -46,7 +46,7 @@ class MnemonicWordChip extends StatelessWidget {
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.2),
+                color: AppColors.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Center(
@@ -97,13 +97,13 @@ class MnemonicEmptySlot extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: isActive
-              ? AppColors.primary.withOpacity(0.1)
-              : AppColors.surfaceLight.withOpacity(0.3),
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : AppColors.surfaceLight.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isActive
                 ? AppColors.primary
-                : AppColors.cardBorder.withOpacity(0.5),
+                : AppColors.cardBorder.withValues(alpha: 0.5),
             width: isActive ? 2 : 1,
           ),
         ),
@@ -115,7 +115,7 @@ class MnemonicEmptySlot extends StatelessWidget {
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: AppColors.textTertiary.withOpacity(0.2),
+                color: AppColors.textTertiary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Center(

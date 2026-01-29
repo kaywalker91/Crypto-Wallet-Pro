@@ -158,31 +158,38 @@ class _MainPageState extends ConsumerState<MainPage> {
           child: SizedBox(
             height: 64,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _NavItem(
-                  icon: Icons.account_balance_wallet,
-                  label: 'Wallet',
-                  isSelected: _currentIndex == 0,
-                  onTap: () => setState(() => _currentIndex = 0),
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.account_balance_wallet,
+                    label: 'Wallet',
+                    isSelected: _currentIndex == 0,
+                    onTap: () => setState(() => _currentIndex = 0),
+                  ),
                 ),
-                _NavItem(
-                  icon: Icons.collections,
-                  label: 'NFTs',
-                  isSelected: _currentIndex == 1,
-                  onTap: () => setState(() => _currentIndex = 1),
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.collections,
+                    label: 'NFTs',
+                    isSelected: _currentIndex == 1,
+                    onTap: () => setState(() => _currentIndex = 1),
+                  ),
                 ),
-                _NavItem(
-                  icon: Icons.link,
-                  label: 'Connect',
-                  isSelected: _currentIndex == 2,
-                  onTap: () => setState(() => _currentIndex = 2),
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.link,
+                    label: 'Connect',
+                    isSelected: _currentIndex == 2,
+                    onTap: () => setState(() => _currentIndex = 2),
+                  ),
                 ),
-                _NavItem(
-                  icon: Icons.settings,
-                  label: 'Settings',
-                  isSelected: _currentIndex == 3,
-                  onTap: () => setState(() => _currentIndex = 3),
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.settings,
+                    label: 'Settings',
+                    isSelected: _currentIndex == 3,
+                    onTap: () => setState(() => _currentIndex = 3),
+                  ),
                 ),
               ],
             ),
@@ -212,39 +219,46 @@ class _NavItem extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ShaderMask(
-              shaderCallback: (bounds) {
-                if (isSelected) {
-                  return AppColors.primaryGradient.createShader(bounds);
-                }
-                return const LinearGradient(
-                  colors: [AppColors.textTertiary, AppColors.textTertiary],
-                ).createShader(bounds);
-              },
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 24,
-              ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: SizedBox.expand(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ShaderMask(
+                  shaderCallback: (bounds) {
+                    if (isSelected) {
+                      return AppColors.primaryGradient.createShader(bounds);
+                    }
+                    return const LinearGradient(
+                      colors: [AppColors.textTertiary, AppColors.textTertiary],
+                    ).createShader(bounds);
+                  },
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected ? AppColors.primary : AppColors.textTertiary,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? AppColors.primary : AppColors.textTertiary,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
-

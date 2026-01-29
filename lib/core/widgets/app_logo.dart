@@ -69,7 +69,7 @@ class _LogoPainter extends CustomPainter {
     canvas.drawPath(outerPath, gradientPaint);
 
     // Inner background
-    final innerPaint = Paint()..color = AppColors.background.withOpacity(0.8);
+    final innerPaint = Paint()..color = AppColors.background.withValues(alpha: 0.8);
     final innerPath = _createHexagonPath(center, radius * 0.75);
     canvas.drawPath(innerPath, innerPaint);
 
@@ -131,12 +131,12 @@ class _LogoPainter extends CustomPainter {
     canvas.drawPath(topPath, paint);
     canvas.drawPath(
       bottomPath,
-      paint..color = AppColors.primary.withOpacity(0.7),
+      paint..color = AppColors.primary.withValues(alpha: 0.7),
     );
 
     // Center line
     final linePaint = Paint()
-      ..color = AppColors.background.withOpacity(0.3)
+      ..color = AppColors.background.withValues(alpha: 0.3)
       ..strokeWidth = 1;
     canvas.drawLine(
       Offset(center.dx - size * 0.5, center.dy),

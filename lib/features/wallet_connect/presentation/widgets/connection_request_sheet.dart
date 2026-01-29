@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../domain/entities/dapp_info.dart';
 
@@ -35,27 +37,36 @@ class ConnectionRequestSheet extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ConnectionRequestSheet(
-        dapp: dapp,
-        chainName: chainName,
-        methods: methods,
-        events: events,
-        onApprove: () => Navigator.pop(context, true),
-        onReject: () => Navigator.pop(context, false),
+      builder: (context) => Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.sheetMaxWidth),
+          child: ConnectionRequestSheet(
+            dapp: dapp,
+            chainName: chainName,
+            methods: methods,
+            events: events,
+            onApprove: () => Navigator.pop(context, true),
+            onReject: () => Navigator.pop(context, false),
+          ),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final horizontal = context.horizontalPadding;
+
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
+        top: false,
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.fromLTRB(horizontal, 24, horizontal, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -88,31 +99,24 @@ class ConnectionRequestSheet extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               // Title
-              const Text(
+              Text(
                 'Connection Request',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTypography.textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
               // dApp name
               Text(
                 dapp.name,
-                style: const TextStyle(
+                style: AppTypography.textTheme.titleMedium?.copyWith(
                   color: AppColors.primary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 4),
               // dApp URL
               Text(
                 dapp.url,
-                style: const TextStyle(
+                style: AppTypography.textTheme.bodySmall?.copyWith(
                   color: AppColors.textTertiary,
-                  fontSize: 14,
                 ),
               ),
               const SizedBox(height: 24),
@@ -121,7 +125,7 @@ class ConnectionRequestSheet extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.cardBackground,
+                  color: AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: AppColors.cardBorder,
@@ -139,12 +143,11 @@ class ConnectionRequestSheet extends StatelessWidget {
                     ),
                     if (methods.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      const Text(
+                      Text(
                         'Permissions',
-                        style: TextStyle(
+                        style: AppTypography.textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -162,10 +165,10 @@ class ConnectionRequestSheet extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.warning.withAlpha(26),
+                  color: AppColors.warning.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.warning.withAlpha(77),
+                    color: AppColors.warning.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -180,9 +183,8 @@ class ConnectionRequestSheet extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'Only connect to trusted websites. Review the permissions before approving.',
-                        style: TextStyle(
+                        style: AppTypography.textTheme.bodySmall?.copyWith(
                           color: AppColors.warning,
-                          fontSize: 12,
                           height: 1.4,
                         ),
                       ),
@@ -245,10 +247,8 @@ class ConnectionRequestSheet extends StatelessWidget {
       child: Center(
         child: Text(
           dapp.name.isNotEmpty ? dapp.name[0].toUpperCase() : '?',
-          style: const TextStyle(
+          style: AppTypography.textTheme.headlineMedium?.copyWith(
             color: AppColors.primary,
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
           ),
         ),
       ),
@@ -266,18 +266,16 @@ class ConnectionRequestSheet extends StatelessWidget {
         const SizedBox(width: 12),
         Text(
           label,
-          style: const TextStyle(
+          style: AppTypography.textTheme.bodySmall?.copyWith(
             color: AppColors.textSecondary,
-            fontSize: 14,
           ),
         ),
         const Spacer(),
         Text(
           value,
-          style: const TextStyle(
+          style: AppTypography.textTheme.bodySmall?.copyWith(
             color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -320,10 +318,9 @@ class ConnectionRequestSheet extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(
+            style: AppTypography.textTheme.labelSmall?.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

@@ -5,6 +5,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../wallet/presentation/providers/wallet_provider.dart';
 
 class ReceivePage extends ConsumerWidget {
@@ -32,122 +34,138 @@ class ReceivePage extends ConsumerWidget {
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F0C29),
-              Color(0xFF302B63),
-              Color(0xFF24243E),
-            ],
-          ),
+          gradient: AppColors.backgroundGradient,
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: EdgeInsets.symmetric(
+              horizontal: context.horizontalPadding,
+              vertical: 24,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Spacer(),
-                const Text(
+                Text(
                   'Scan QR to Pay',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                  style: AppTypography.textTheme.headlineSmall?.copyWith(
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 32),
-                
+                const SizedBox(height: 28),
+
                 // QR Code Container
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.surfaceLight,
                     borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppColors.cardBorder),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.25),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                  child: walletAddress.isNotEmpty
-                      ? QrImageView(
-                          data: walletAddress,
-                          version: QrVersions.auto,
-                          size: MediaQuery.of(context).size.width * 0.6,
-                          backgroundColor: Colors.white,
-                        )
-                      : SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.6,
-                          height: MediaQuery.of(context).size.width * 0.6,
-                          child: const Center(child: CircularProgressIndicator()),
-                        ),
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // Address Display
-                GestureDetector(
-                  onTap: () {
-                    _copyToClipboard(context, walletAddress);
-                  },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
                     ),
-                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            walletAddress,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                              fontFamily: 'Courier', 
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                    child: walletAddress.isNotEmpty
+                        ? QrImageView(
+                            data: walletAddress,
+                            version: QrVersions.auto,
+                            size: MediaQuery.of(context).size.width * 0.6,
+                            backgroundColor: Colors.white,
+                          )
+                        : SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.6,
+                            height: MediaQuery.of(context).size.width * 0.6,
+                            child: const Center(child: CircularProgressIndicator()),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.copy, color: Colors.white70, size: 16),
-                      ],
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+
+                // Address Display
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: walletAddress.isEmpty
+                        ? null
+                        : () => _copyToClipboard(context, walletAddress),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceLight,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.cardBorder),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              walletAddress,
+                              textAlign: TextAlign.center,
+                              style: AppTypography.addressText.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.copy,
+                            color: AppColors.textSecondary,
+                            size: 16,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                
-                const SizedBox(height: 48),
-                
+
+                const SizedBox(height: 36),
+
                 // Action Buttons
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _ActionButton(
-                      icon: Icons.share,
-                      label: 'Share',
-                      onTap: () {
-                         if (walletAddress.isNotEmpty) {
-                           Share.share(walletAddress);
-                         }
-                      },
+                    Expanded(
+                      child: SizedBox(
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: walletAddress.isNotEmpty
+                              ? () => Share.share(walletAddress)
+                              : null,
+                          icon: const Icon(Icons.share),
+                          label: const Text('Share'),
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 32),
-                    _ActionButton(
-                       icon: Icons.copy_all,
-                       label: 'Copy',
-                       onTap: () => _copyToClipboard(context, walletAddress),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          onPressed: walletAddress.isNotEmpty
+                              ? () => _copyToClipboard(context, walletAddress)
+                              : null,
+                          icon: const Icon(Icons.copy_all),
+                          label: const Text('Copy'),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                
+
                 const Spacer(flex: 2),
               ],
             ),
@@ -161,62 +179,12 @@ class ReceivePage extends ConsumerWidget {
     if (text.isEmpty) return;
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Address copied to clipboard'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: const Text('Address copied to clipboard'),
+        duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.surface,
       ),
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(50),
-            child: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primary,
-                boxShadow: [
-                   BoxShadow(
-                     color: AppColors.primary.withOpacity(0.4),
-                     blurRadius: 12,
-                     offset: const Offset(0, 4),
-                   ),
-                ],
-              ),
-              child: Icon(icon, color: Colors.white),
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
     );
   }
 }

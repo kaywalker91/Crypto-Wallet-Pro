@@ -22,7 +22,6 @@ export 'wallet_usecase_providers.dart';
 class WalletNotifier extends AsyncNotifier<WalletState> {
   @override
   Future<WalletState> build() async {
-    final generateMnemonic = ref.watch(generateMnemonicUseCaseProvider);
     final getStoredWallet = ref.watch(getStoredWalletUseCaseProvider);
     final authSessionService = ref.watch(authSessionServiceProvider);
 

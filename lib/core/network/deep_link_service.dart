@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 import '../../features/wallet_connect/data/services/wallet_connect_service.dart';
 import '../../features/wallet_connect/presentation/providers/wallet_connect_provider.dart';
 
@@ -164,7 +165,7 @@ class DeepLinkService {
 }
 
 @riverpod
-DeepLinkService deepLinkService(DeepLinkServiceRef ref) {
+DeepLinkService deepLinkService(Ref ref) {
   final walletConnectService = ref.watch(walletConnectServiceProvider);
   final service = DeepLinkService(walletConnectService);
   

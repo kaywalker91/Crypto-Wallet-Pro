@@ -78,26 +78,27 @@ class _SplashPageState extends ConsumerState<SplashPage>
       final requireAuth =
           settingsState.settings.biometricEnabled || settingsState.settings.pinEnabled;
 
+      String targetRoute;
       if (hasWallet) {
         if (walletState.isAuthenticated) {
-          context.go(Routes.main);
-          return;
+          targetRoute = Routes.main;
+        } else if (requireAuth) {
+          targetRoute = Routes.lock;
+        } else {
+          await ref.read(walletProvider.notifier).markAuthenticated();
+          if (!mounted) return;
+          targetRoute = Routes.main;
         }
-        if (requireAuth) {
-          context.go(Routes.lock);
-          return;
-        }
-        await ref.read(walletProvider.notifier).markAuthenticated();
-        context.go(Routes.main);
-        return;
+      } else {
+        targetRoute = Routes.onboarding;
       }
 
-      context.go(Routes.onboarding);
+      if (!mounted) return;
+      context.go(targetRoute);
     } catch (e) {
       debugPrint('Splash navigation error: $e');
-      if (mounted) {
-        context.go(Routes.onboarding);
-      }
+      if (!mounted) return;
+      context.go(Routes.onboarding);
     }
   }
 

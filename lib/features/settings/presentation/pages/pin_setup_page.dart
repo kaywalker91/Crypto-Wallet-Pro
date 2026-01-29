@@ -149,7 +149,7 @@ class _PinField extends StatelessWidget {
           color: AppColors.textSecondary,
         ),
         filled: true,
-        fillColor: AppColors.surfaceLight.withOpacity(0.12),
+        fillColor: AppColors.surfaceLight.withValues(alpha: 0.12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: AppColors.cardBorder),

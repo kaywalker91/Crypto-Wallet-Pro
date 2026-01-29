@@ -27,13 +27,25 @@ class GradientButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = onPressed != null;
+    final gradient = isEnabled
+        ? AppColors.primaryGradient
+        : LinearGradient(
+            colors: [
+              AppColors.surfaceLight,
+              AppColors.surface,
+            ],
+          );
+    final foreground = isEnabled ? AppColors.background : AppColors.textDisabled;
+
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
-        gradient: AppColors.primaryGradient,
-        boxShadow: showGlow && onPressed != null
+        gradient: gradient,
+        border: isEnabled ? null : Border.all(color: AppColors.cardBorder),
+        boxShadow: showGlow && isEnabled
             ? [
                 BoxShadow(
                   color: AppColors.neonCyanGlow,
@@ -55,6 +67,8 @@ class GradientButton extends StatelessWidget {
         child: InkWell(
           onTap: isLoading ? null : onPressed,
           borderRadius: BorderRadius.circular(borderRadius),
+          splashColor: foreground.withValues(alpha: 0.16),
+          highlightColor: foreground.withValues(alpha: 0.08),
           child: Center(
             child: isLoading
                 ? const SizedBox(
@@ -71,7 +85,7 @@ class GradientButton extends StatelessWidget {
                       if (icon != null) ...[
                         Icon(
                           icon,
-                          color: AppColors.background,
+                          color: foreground,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -79,7 +93,7 @@ class GradientButton extends StatelessWidget {
                       Text(
                         text,
                         style: AppTypography.buttonText.copyWith(
-                          color: AppColors.background,
+                          color: foreground,
                         ),
                       ),
                     ],
@@ -112,12 +126,23 @@ class GradientOutlinedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = onPressed != null;
+    final borderGradient = isEnabled
+        ? AppColors.primaryGradient
+        : LinearGradient(
+            colors: [
+              AppColors.cardBorder,
+              AppColors.cardBorder,
+            ],
+          );
+    final foreground = isEnabled ? Colors.white : AppColors.textDisabled;
+
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
-        gradient: AppColors.primaryGradient,
+        gradient: borderGradient,
       ),
       child: Container(
         margin: const EdgeInsets.all(2),
@@ -128,8 +153,10 @@ class GradientOutlinedButton extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: onPressed,
+            onTap: isEnabled ? onPressed : null,
             borderRadius: BorderRadius.circular(borderRadius - 2),
+            splashColor: AppColors.primary.withValues(alpha: 0.16),
+            highlightColor: AppColors.primary.withValues(alpha: 0.08),
             child: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -137,10 +164,10 @@ class GradientOutlinedButton extends StatelessWidget {
                   if (icon != null) ...[
                     ShaderMask(
                       shaderCallback: (bounds) =>
-                          AppColors.primaryGradient.createShader(bounds),
+                          borderGradient.createShader(bounds),
                       child: Icon(
                         icon,
-                        color: Colors.white,
+                        color: foreground,
                         size: 20,
                       ),
                     ),
@@ -148,11 +175,11 @@ class GradientOutlinedButton extends StatelessWidget {
                   ],
                   ShaderMask(
                     shaderCallback: (bounds) =>
-                        AppColors.primaryGradient.createShader(bounds),
+                        borderGradient.createShader(bounds),
                     child: Text(
                       text,
                       style: AppTypography.buttonText.copyWith(
-                        color: Colors.white,
+                        color: foreground,
                       ),
                     ),
                   ),

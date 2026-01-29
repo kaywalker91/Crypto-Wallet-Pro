@@ -8,6 +8,7 @@ import '../../domain/entities/session_request.dart';
 import '../../domain/entities/dapp_info.dart';
 
 class WalletConnectService {
+  // ignore: deprecated_member_use
   Web3Wallet? _web3Wallet;
   
   // Events
@@ -29,6 +30,7 @@ class WalletConnectService {
     }
 
     try {
+      // ignore: deprecated_member_use
       _web3Wallet = await Web3Wallet.createInstance(
         projectId: projectId,
         metadata: const PairingMetadata(

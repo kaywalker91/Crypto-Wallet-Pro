@@ -5,7 +5,6 @@ import 'package:crypto_wallet_pro/core/security/services/screen_recording_detect
 import 'package:crypto_wallet_pro/core/security/services/screenshot_detection_service.dart';
 import 'package:crypto_wallet_pro/core/security/services/secure_transaction_signer.dart';
 import 'package:crypto_wallet_pro/core/security/services/tamper_detection_service.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -358,7 +357,7 @@ void main() {
         screenshotDetectionService: mockScreenshot,
       );
 
-      final context = await relaxedSigner.prepareSecureContext();
+      await relaxedSigner.prepareSecureContext();
 
       // Relaxed config는 일부 검사를 건너뜀
       verifyNever(mockOverlay.enableStrictMode());

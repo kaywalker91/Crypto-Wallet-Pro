@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/metamask_connection_status.dart';
 import '../providers/metamask_provider.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 
 /// Button widget for connecting to MetaMask
 class MetaMaskConnectButton extends ConsumerWidget {
@@ -78,7 +80,7 @@ class MetaMaskConnectButton extends ConsumerWidget {
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+                Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -163,19 +165,65 @@ class MetaMaskConnectButton extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Disconnect MetaMask'),
-        content: const Text('Are you sure you want to disconnect from MetaMask?'),
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Disconnect MetaMask',
+          style: AppTypography.textTheme.titleLarge?.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to disconnect from MetaMask?',
+          style: AppTypography.textTheme.bodyMedium?.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.textSecondary,
+            ),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               notifier.disconnect();
               Navigator.of(context).pop();
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return AppColors.surfaceLight;
+                }
+                if (states.contains(WidgetState.pressed)) {
+                  return AppColors.error.withValues(alpha: 0.9);
+                }
+                if (states.contains(WidgetState.hovered)) {
+                  return AppColors.error.withValues(alpha: 0.8);
+                }
+                return AppColors.error;
+              }),
+              foregroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return AppColors.textDisabled;
+                }
+                return Colors.white;
+              }),
+              overlayColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.pressed)) {
+                  return Colors.white.withValues(alpha: 0.16);
+                }
+                if (states.contains(WidgetState.hovered) ||
+                    states.contains(WidgetState.focused)) {
+                  return Colors.white.withValues(alpha: 0.1);
+                }
+                return null;
+              }),
+            ),
             child: const Text('Disconnect'),
           ),
         ],

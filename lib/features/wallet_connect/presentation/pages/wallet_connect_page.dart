@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/page_transitions.dart';
+import '../../../../core/utils/responsive.dart';
+import '../../../../core/widgets/responsive_content.dart';
 import '../../../external_wallet/domain/entities/metamask_connection_status.dart';
 import '../../../external_wallet/presentation/providers/metamask_provider.dart';
 import '../../../external_wallet/presentation/widgets/metamask_connect_button.dart';
@@ -57,8 +59,8 @@ class WalletConnectPage extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context, WidgetRef ref, WalletConnectState state) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+    return ResponsiveContent(
+      padding: EdgeInsets.fromLTRB(context.horizontalPadding, 16, context.horizontalPadding, 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -133,37 +135,50 @@ class WalletConnectPage extends ConsumerWidget {
     ({int total, int active, int pending}) counts,
   ) {
     final currentFilter = ref.watch(sessionFilterProvider);
+    final chips = [
+      _FilterChip(
+        label: 'All',
+        count: counts.total,
+        isSelected: currentFilter == SessionFilter.all,
+        onTap: () => ref.read(walletConnectProvider.notifier).setFilter(SessionFilter.all),
+      ),
+      _FilterChip(
+        label: 'Active',
+        count: counts.active,
+        isSelected: currentFilter == SessionFilter.active,
+        color: AppColors.success,
+        onTap: () => ref.read(walletConnectProvider.notifier).setFilter(SessionFilter.active),
+      ),
+      _FilterChip(
+        label: 'Pending',
+        count: counts.pending,
+        isSelected: currentFilter == SessionFilter.pending,
+        color: AppColors.warning,
+        onTap: () => ref.read(walletConnectProvider.notifier).setFilter(SessionFilter.pending),
+      ),
+    ];
 
-    return Container(
-      height: 48,
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: [
-          _FilterChip(
-            label: 'All',
-            count: counts.total,
-            isSelected: currentFilter == SessionFilter.all,
-            onTap: () => ref.read(walletConnectProvider.notifier).setFilter(SessionFilter.all),
+    if (context.isCompact) {
+      return ResponsiveContent(
+        padding: EdgeInsets.fromLTRB(context.horizontalPadding, 4, context.horizontalPadding, 12),
+        child: SizedBox(
+          height: 48,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: chips.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            itemBuilder: (context, index) => chips[index],
           ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Active',
-            count: counts.active,
-            isSelected: currentFilter == SessionFilter.active,
-            color: AppColors.success,
-            onTap: () => ref.read(walletConnectProvider.notifier).setFilter(SessionFilter.active),
-          ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Pending',
-            count: counts.pending,
-            isSelected: currentFilter == SessionFilter.pending,
-            color: AppColors.warning,
-            onTap: () => ref.read(walletConnectProvider.notifier).setFilter(SessionFilter.pending),
-          ),
-        ],
+        ),
+      );
+    }
+
+    return ResponsiveContent(
+      padding: EdgeInsets.fromLTRB(context.horizontalPadding, 4, context.horizontalPadding, 12),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: chips,
       ),
     );
   }
@@ -188,57 +203,65 @@ class WalletConnectPage extends ConsumerWidget {
       onRefresh: () => ref.read(walletConnectProvider.notifier).refresh(),
       color: AppColors.primary,
       backgroundColor: AppColors.surface,
-      child: ListView(
-        padding: const EdgeInsets.only(top: 8, bottom: 100),
-        children: [
-          // MetaMask Connection Section
-          _buildMetaMaskSection(context, ref),
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.maxContentWidth),
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(
+              context.horizontalPadding,
+              8,
+              context.horizontalPadding,
+              120,
+            ),
+            children: [
+              // MetaMask Connection Section
+              _buildMetaMaskSection(context, ref),
 
-          const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-          // Divider with label
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Expanded(child: Divider(color: AppColors.cardBorder)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    'dApp Sessions',
-                    style: TextStyle(
-                      color: AppColors.textTertiary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+              // Divider with label
+              Row(
+                children: [
+                  Expanded(child: Divider(color: AppColors.cardBorder)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      'dApp Sessions',
+                      style: TextStyle(
+                        color: AppColors.textTertiary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-                Expanded(child: Divider(color: AppColors.cardBorder)),
-              ],
-            ),
+                  Expanded(child: Divider(color: AppColors.cardBorder)),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // Sessions list or empty state
+              if (filteredSessions.isEmpty)
+                SessionEmptyState(
+                  isFiltered: state.filter != SessionFilter.all,
+                  actionLabel: state.filter == SessionFilter.all ? 'Scan QR Code' : 'Show All',
+                  onAction: () {
+                    if (state.filter == SessionFilter.all) {
+                      _openQrScanner(context, ref);
+                    } else {
+                      ref.read(walletConnectProvider.notifier).setFilter(SessionFilter.all);
+                    }
+                  },
+                )
+              else
+                ...filteredSessions.map((session) => SessionListItem(
+                      session: session,
+                      onTap: () => _onSessionTap(context, ref, session),
+                    )),
+            ],
           ),
-
-          const SizedBox(height: 12),
-
-          // Sessions list or empty state
-          if (filteredSessions.isEmpty)
-            SessionEmptyState(
-              isFiltered: state.filter != SessionFilter.all,
-              actionLabel: state.filter == SessionFilter.all ? 'Scan QR Code' : 'Show All',
-              onAction: () {
-                if (state.filter == SessionFilter.all) {
-                  _openQrScanner(context, ref);
-                } else {
-                  ref.read(walletConnectProvider.notifier).setFilter(SessionFilter.all);
-                }
-              },
-            )
-          else
-            ...filteredSessions.map((session) => SessionListItem(
-              session: session,
-              onTap: () => _onSessionTap(context, ref, session),
-            )),
-        ],
+        ),
       ),
     );
   }
@@ -246,86 +269,83 @@ class WalletConnectPage extends ConsumerWidget {
   Widget _buildMetaMaskSection(BuildContext context, WidgetRef ref) {
     final metaMaskState = ref.watch(metaMaskNotifierProvider);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.orange.shade900.withOpacity(0.3),
-              Colors.orange.shade800.withOpacity(0.1),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.orange.withOpacity(0.3),
-            width: 1,
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.orange.shade900.withValues(alpha: 0.3),
+            Colors.orange.shade800.withValues(alpha: 0.1),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header row
-              Row(
-                children: [
-                  // MetaMask icon
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.account_balance_wallet,
-                      color: Colors.orange,
-                      size: 24,
-                    ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.orange.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header row
+            Row(
+              children: [
+                // MetaMask icon
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade100,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(width: 12),
-                  // Title and subtitle
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'MetaMask',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Connect your external wallet',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: const Icon(
+                    Icons.account_balance_wallet,
+                    color: Colors.orange,
+                    size: 24,
                   ),
-                  // Status indicator
-                  const MetaMaskStatusIndicator(showAddress: false, size: 10),
-                ],
-              ),
+                ),
+                const SizedBox(width: 12),
+                // Title and subtitle
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'MetaMask',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Connect your external wallet',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Status indicator
+                const MetaMaskStatusIndicator(showAddress: false, size: 10),
+              ],
+            ),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-              // Connection content based on state
-              if (metaMaskState.status == MetaMaskConnectionStatus.connected &&
-                  metaMaskState.connection != null)
-                _buildConnectedContent(context, ref, metaMaskState)
-              else
-                _buildDisconnectedContent(context, ref, metaMaskState),
-            ],
-          ),
+            // Connection content based on state
+            if (metaMaskState.status == MetaMaskConnectionStatus.connected &&
+                metaMaskState.connection != null)
+              _buildConnectedContent(context, ref, metaMaskState)
+            else
+              _buildDisconnectedContent(context, ref, metaMaskState),
+          ],
         ),
       ),
     );
@@ -350,7 +370,7 @@ class WalletConnectPage extends ConsumerWidget {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.2),
+                  color: AppColors.success.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -411,9 +431,9 @@ class WalletConnectPage extends ConsumerWidget {
             padding: const EdgeInsets.all(10),
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: AppColors.error.withOpacity(0.1),
+              color: AppColors.error.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.error.withOpacity(0.3)),
+              border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [

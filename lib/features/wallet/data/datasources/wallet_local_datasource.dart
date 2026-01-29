@@ -76,7 +76,7 @@ class WalletLocalDataSourceImpl implements WalletLocalDataSource {
   Future<Wallet> deriveWallet(String mnemonic) async {
     try {
       final ethKey = await derivePrivateKey(mnemonic);
-      final address = await ethKey.extractAddress();
+      final address = ethKey.address;
 
       return WalletModel(
         address: address.hexEip55,

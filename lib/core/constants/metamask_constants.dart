@@ -37,7 +37,7 @@ class MetaMaskConstants {
   /// Build MetaMask deep link with WalletConnect URI
   static String buildDeepLink(String wcUri) {
     final encodedUri = Uri.encodeComponent(wcUri);
-    return '${deepLinkScheme}$wcUriParam$encodedUri';
+    return '$deepLinkScheme$wcUriParam$encodedUri';
   }
 
   /// Build MetaMask universal link fallback

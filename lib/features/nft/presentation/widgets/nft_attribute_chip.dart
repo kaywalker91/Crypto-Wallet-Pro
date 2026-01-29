@@ -113,9 +113,9 @@ class NftAttributeChip extends StatelessWidget {
   }
 
   Color _getRarityColor(double rarity) {
-    if (rarity <= 1) return AppColors.secondary; // Legendary (purple)
-    if (rarity <= 5) return AppColors.secondaryLight; // Epic (pink)
-    if (rarity <= 15) return AppColors.primary; // Rare (cyan)
+    if (rarity <= 1) return AppColors.secondary; // Legendary (accent)
+    if (rarity <= 5) return AppColors.secondaryLight; // Epic (accent light)
+    if (rarity <= 15) return AppColors.primary; // Rare (primary)
     if (rarity <= 30) return AppColors.success; // Uncommon (green)
     return AppColors.textTertiary; // Common
   }

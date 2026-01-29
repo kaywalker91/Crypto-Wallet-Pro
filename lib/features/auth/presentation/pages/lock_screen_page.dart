@@ -137,7 +137,8 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await ref.read(authSessionServiceProvider).markSessionValid();
         await ref.read(walletProvider.notifier).markAuthenticated();
-        if (mounted) context.go(Routes.main);
+        if (!context.mounted) return;
+        context.go(Routes.main);
       });
     }
 
@@ -158,9 +159,9 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
                   height: 120,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.surfaceLight.withOpacity(0.15),
+                    color: AppColors.surfaceLight.withValues(alpha: 0.15),
                     border: Border.all(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       width: 1.5,
                     ),
                   ),
@@ -192,10 +193,10 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.warning.withOpacity(0.1),
+                      color: AppColors.warning.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColors.warning.withOpacity(0.2),
+                        color: AppColors.warning.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Row(
@@ -227,10 +228,10 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.1),
+                      color: AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColors.error.withOpacity(0.2),
+                        color: AppColors.error.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Row(
@@ -269,7 +270,7 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
                     obscureText: true,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: AppColors.surfaceLight.withOpacity(0.12),
+                      fillColor: AppColors.surfaceLight.withValues(alpha: 0.12),
                       hintText: 'PIN 입력',
                       hintStyle: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textTertiary,

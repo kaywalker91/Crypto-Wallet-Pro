@@ -152,6 +152,8 @@ flutter build ios --release
 
 ## 🆕 변경사항 요약
 
+- **2026-01-29**: 하단 네비게이션 오버플로우 수정 및 반응형 스케일 다운 처리
+- **2026-01-29**: Flutter analyze 정리 (withOpacity→withValues, MaterialState→WidgetState, Riverpod Ref 전환/의존성 추가, web3dart address 사용, 불필요 로그·lint 정리)
 - **보안 강화**: 생체인증 키 관리, PIN 폴백, 세션 인증 및 저장소 키 확장
 - **감사 로깅/동기화**: 암호화 감사 로그와 통계, E2E 원격 보안 동기화 프로토콜 추가
 - **기기 보호**: 스크린샷/녹화 보호 및 감지, 루팅·탈옥 무결성 검사와 경고 다이얼로그 통합

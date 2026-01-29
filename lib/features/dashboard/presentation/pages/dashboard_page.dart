@@ -6,6 +6,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/env_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../shared/providers/network_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/action_buttons_row.dart';
@@ -129,7 +130,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.error),
                   ),
@@ -157,7 +158,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: dashboardState.tokens.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  separatorBuilder: (_, _) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final token = dashboardState.tokens[index];
                     return TokenListTile(
@@ -181,38 +182,114 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: AppColors.cardBackground,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      builder: (context) => Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.sheetMaxWidth),
+          child: _NetworkSelectionSheet(
+            currentNetwork: ref.read(selectedNetworkProvider),
+            onSelected: (network) {
+              ref.read(selectedNetworkProvider.notifier).setNetwork(network);
+              ref.read(dashboardProvider.notifier).refresh();
+              Navigator.pop(context);
+            },
+          ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Select Network', style: AppTypography.textTheme.titleLarge),
-            const SizedBox(height: 24),
-            _NetworkOption(
-              name: 'Ethereum Mainnet',
-              isSelected: ref.read(selectedNetworkProvider) == NetworkType.mainnet,
-              onTap: () {
-                ref.read(selectedNetworkProvider.notifier).setNetwork(NetworkType.mainnet);
-                ref.read(dashboardProvider.notifier).refresh();
-                Navigator.pop(context);
-              },
-            ),
-            const SizedBox(height: 16),
-            _NetworkOption(
-              name: 'Sepolia Testnet',
-              isSelected: ref.read(selectedNetworkProvider) == NetworkType.sepolia,
-              onTap: () {
-                ref.read(selectedNetworkProvider.notifier).setNetwork(NetworkType.sepolia);
-                ref.read(dashboardProvider.notifier).refresh();
-                Navigator.pop(context);
-              },
-            ),
-          ],
+      ),
+    );
+  }
+}
+
+class _NetworkSelectionSheet extends StatelessWidget {
+  final NetworkType currentNetwork;
+  final ValueChanged<NetworkType> onSelected;
+
+  const _NetworkSelectionSheet({
+    required this.currentNetwork,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final horizontal = context.horizontalPadding;
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.75;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxHeight),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.textTertiary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Select Network', style: AppTypography.textTheme.titleLarge),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Pick the chain for balances and activity.',
+                      style: AppTypography.textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.fromLTRB(horizontal, 8, horizontal, 12),
+                  children: NetworkType.values
+                      .map((network) => _NetworkOption(
+                            network: network,
+                            isSelected: network == currentNetwork,
+                            onTap: () => onSelected(network),
+                          ))
+                      .toList(),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(horizontal, 4, horizontal, 20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLight,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.cardBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, size: 16, color: AppColors.textTertiary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Changing networks may refresh balances.',
+                          style: AppTypography.textTheme.bodySmall?.copyWith(
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -220,53 +297,111 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 }
 
 class _NetworkOption extends StatelessWidget {
-  final String name;
+  final NetworkType network;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _NetworkOption({
-    required this.name,
+    required this.network,
     required this.isSelected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.cardBorder,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: name.contains('Sepolia') ? AppColors.warning : AppColors.success,
-              ),
+    final isMainnet = network == NetworkType.mainnet;
+    final badgeColor = isMainnet ? AppColors.success : AppColors.warning;
+    final badgeLabel = isMainnet ? 'MAINNET' : 'TESTNET';
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary.withValues(alpha: 0.1)
+                : AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? AppColors.primary : AppColors.cardBorder,
+              width: isSelected ? 2 : 1,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                name,
-                style: AppTypography.textTheme.bodyLarge?.copyWith(
-                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: isMainnet
+                      ? const LinearGradient(
+                          colors: [Color(0xFF627EEA), Color(0xFF3C3C3D)],
+                        )
+                      : const LinearGradient(
+                          colors: [Color(0xFF9B8DFF), Color(0xFF6B5CE7)],
+                        ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.language, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            network.displayName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.textTheme.titleMedium,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: badgeColor.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            badgeLabel,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: badgeColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Chain ID: ${network.chainId}',
+                      style: AppTypography.textTheme.bodySmall?.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            if (isSelected)
-              const Icon(Icons.check, color: AppColors.primary),
-          ],
+              if (isSelected)
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check, size: 16, color: Colors.white),
+                ),
+            ],
+          ),
         ),
       ),
     );

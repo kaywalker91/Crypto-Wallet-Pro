@@ -81,7 +81,7 @@ void main() {
 
     final key = await dataSource.derivePrivateKey(mnemonic);
     final wallet = await dataSource.deriveWallet(mnemonic);
-    final address = await key.extractAddress();
+    final address = key.address;
 
     expect(address.hexEip55, wallet.address);
   });

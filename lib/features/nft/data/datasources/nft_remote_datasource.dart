@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 import '../../../../core/constants/env_config.dart';
 import '../../../../core/constants/mock_config.dart';
 import '../../../../shared/providers/network_provider.dart';
@@ -107,7 +108,7 @@ class NftRemoteDataSourceImpl implements NftRemoteDataSource {
 }
 
 @riverpod
-NftRemoteDataSource nftRemoteDataSource(NftRemoteDataSourceRef ref) {
+NftRemoteDataSource nftRemoteDataSource(Ref ref) {
   // 목업 모드일 경우 MockNftDataSource 사용
   if (MockConfig.useMockData || MockConfig.mockNft) {
     return MockNftDataSource();

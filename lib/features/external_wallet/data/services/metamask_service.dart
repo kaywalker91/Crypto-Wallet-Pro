@@ -29,6 +29,7 @@ class MetaMaskConnectionException implements Exception {
 
 /// Service for connecting to MetaMask via WalletConnect and deep links
 class MetaMaskService {
+  // ignore: deprecated_member_use
   SignClient? _signClient;
   SessionData? _session;
   // ignore: unused_field
@@ -104,6 +105,7 @@ class MetaMaskService {
     }
 
     try {
+      // ignore: deprecated_member_use
       _signClient = await SignClient.createInstance(
         projectId: projectId,
         metadata: const PairingMetadata(

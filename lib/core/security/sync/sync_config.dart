@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 import 'sync_payload.dart';
-import 'sync_result.dart';
 
 /// 동기화 설정.
 ///

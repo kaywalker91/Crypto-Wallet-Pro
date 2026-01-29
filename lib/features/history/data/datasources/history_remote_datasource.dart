@@ -1,6 +1,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../../../core/constants/env_config.dart';
 import '../../../../core/constants/mock_config.dart';
@@ -100,7 +101,7 @@ class HistoryRemoteDataSourceImpl implements HistoryRemoteDataSource {
 }
 
 @riverpod
-HistoryRemoteDataSource historyRemoteDataSource(HistoryRemoteDataSourceRef ref) {
+HistoryRemoteDataSource historyRemoteDataSource(Ref ref) {
   // 목업 모드일 경우 MockHistoryDataSource 사용
   if (MockConfig.useMockData || MockConfig.mockHistory) {
     return MockHistoryDataSource();

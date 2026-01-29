@@ -3,13 +3,9 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/providers/storage_providers.dart';
-import '../../../shared/services/secure_storage_service.dart';
 import '../../constants/storage_keys.dart';
 import '../../network/dio_provider.dart';
-import '../services/encryption_service.dart';
-import '../services/key_derivation_service.dart';
 import '../services/remote_security_sync_service.dart';
-import '../services/security_audit_logger.dart';
 import '../sync/secure_sync_protocol.dart';
 import '../sync/sync_config.dart';
 import '../sync/sync_conflict_resolver.dart';
@@ -75,7 +71,6 @@ final remoteSecuritySyncServiceProvider =
     Provider<RemoteSecuritySyncService>((ref) {
   final dio = ref.watch(dioProvider);
   final syncProtocol = ref.watch(secureSyncProtocolProvider);
-  final conflictResolver = ref.watch(syncConflictResolverProvider);
   final auditLogger = ref.watch(securityAuditLoggerProvider);
   final secureStorage = ref.watch(secureStorageServiceProvider);
   final config = ref.watch(syncConfigProvider).value ??
@@ -84,7 +79,6 @@ final remoteSecuritySyncServiceProvider =
   return RemoteSecuritySyncService(
     dio: dio,
     syncProtocol: syncProtocol,
-    conflictResolver: conflictResolver,
     auditLogger: auditLogger,
     secureStorage: secureStorage,
     config: config,

@@ -1,6 +1,7 @@
 
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/constants/env_config.dart';
@@ -24,7 +25,7 @@ class GetTransactionHistory {
 }
 
 @riverpod
-GetTransactionHistory getTransactionHistoryUseCase(GetTransactionHistoryUseCaseRef ref) {
+GetTransactionHistory getTransactionHistoryUseCase(Ref ref) {
   final repository = ref.watch(historyRepositoryProvider);
   return GetTransactionHistory(repository);
 }

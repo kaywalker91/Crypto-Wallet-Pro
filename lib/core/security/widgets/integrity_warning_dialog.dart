@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/device_integrity_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
 
 /// 기기 무결성 경고 다이얼로그
 ///
@@ -30,28 +32,29 @@ class IntegrityWarningDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isRooted = result.status == DeviceIntegrityStatus.rooted;
     final isJailbroken = result.status == DeviceIntegrityStatus.jailbroken;
+    final riskColor = _getRiskColor(result.riskLevel);
 
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: AppColors.surface,
       title: Row(
         children: [
           Icon(
             Icons.warning_rounded,
-            color: _getRiskColor(result.riskLevel),
+            color: riskColor,
             size: 32,
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               _getTitle(isRooted, isJailbroken),
-              style: theme.textTheme.titleLarge?.copyWith(
+              style: AppTypography.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -69,8 +72,8 @@ class IntegrityWarningDialog extends StatelessWidget {
             // 경고 메시지
             Text(
               _getWarningMessage(isRooted, isJailbroken),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+              style: AppTypography.textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
                 height: 1.5,
               ),
             ),
@@ -80,9 +83,9 @@ class IntegrityWarningDialog extends StatelessWidget {
             if (result.details.isNotEmpty) ...[
               Text(
                 '감지된 위험 요소:',
-                style: theme.textTheme.titleSmall?.copyWith(
+                style: AppTypography.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: _getRiskColor(result.riskLevel),
+                  color: riskColor,
                 ),
               ),
               const SizedBox(height: 8),
@@ -95,14 +98,14 @@ class IntegrityWarningDialog extends StatelessWidget {
                       Icon(
                         Icons.circle,
                         size: 6,
-                        color: theme.colorScheme.onSurface.withValues(alpha:0.6),
+                        color: AppColors.textTertiary,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           threat,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha:0.7),
+                          style: AppTypography.textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -117,10 +120,10 @@ class IntegrityWarningDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: _getRiskColor(result.riskLevel).withValues(alpha:0.1),
+                color: riskColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: _getRiskColor(result.riskLevel).withValues(alpha:0.3),
+                  color: riskColor.withValues(alpha: 0.3),
                 ),
               ),
               child: Column(
@@ -131,14 +134,14 @@ class IntegrityWarningDialog extends StatelessWidget {
                       Icon(
                         Icons.security_rounded,
                         size: 16,
-                        color: _getRiskColor(result.riskLevel),
+                        color: riskColor,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         '보안 권장사항',
-                        style: theme.textTheme.labelLarge?.copyWith(
+                        style: AppTypography.textTheme.labelLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: _getRiskColor(result.riskLevel),
+                          color: riskColor,
                         ),
                       ),
                     ],
@@ -149,8 +152,8 @@ class IntegrityWarningDialog extends StatelessWidget {
                     '• 앱 사용 후 반드시 로그아웃하세요\n'
                     '• 출처 불명의 앱 설치를 피하세요\n'
                     '• 정기적으로 기기 보안 상태를 점검하세요',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha:0.7),
+                    style: AppTypography.textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
                       height: 1.4,
                     ),
                   ),
@@ -166,24 +169,47 @@ class IntegrityWarningDialog extends StatelessWidget {
           child: Text(
             '앱 종료',
             style: TextStyle(
-              color: theme.colorScheme.error,
+              color: AppColors.error,
               fontWeight: FontWeight.w600,
             ),
           ),
         ),
-        TextButton(
+        ElevatedButton(
           onPressed: () => Navigator.of(context).pop(true),
-          style: TextButton.styleFrom(
-            backgroundColor: _getRiskColor(result.riskLevel).withValues(alpha:0.1),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          ),
-          child: Text(
-            '위험 감수하고 계속',
-            style: TextStyle(
-              color: _getRiskColor(result.riskLevel),
-              fontWeight: FontWeight.bold,
+          style: ButtonStyle(
+            padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
+            backgroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.disabled)) {
+                return AppColors.surfaceLight;
+              }
+              if (states.contains(WidgetState.pressed)) {
+                return riskColor.withValues(alpha: 0.9);
+              }
+              if (states.contains(WidgetState.hovered)) {
+                return riskColor.withValues(alpha: 0.8);
+              }
+              return riskColor;
+            }),
+            foregroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.disabled)) {
+                return AppColors.textDisabled;
+              }
+              return Colors.white;
+            }),
+            overlayColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.pressed)) {
+                return Colors.white.withValues(alpha: 0.16);
+              }
+              if (states.contains(WidgetState.hovered) ||
+                  states.contains(WidgetState.focused)) {
+                return Colors.white.withValues(alpha: 0.1);
+              }
+              return null;
+            }),
           ),
+          child: const Text('위험 감수하고 계속'),
         ),
       ],
     );
@@ -191,8 +217,8 @@ class IntegrityWarningDialog extends StatelessWidget {
 
   /// 위험도 표시 인디케이터
   Widget _buildRiskIndicator(BuildContext context, double riskLevel) {
-    final theme = Theme.of(context);
     final percentage = (riskLevel * 100).toInt();
+    final riskColor = _getRiskColor(riskLevel);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,14 +228,14 @@ class IntegrityWarningDialog extends StatelessWidget {
           children: [
             Text(
               '위험도',
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha:0.7),
+              style: AppTypography.textTheme.labelMedium?.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
             Text(
               '$percentage%',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: _getRiskColor(riskLevel),
+              style: AppTypography.textTheme.labelLarge?.copyWith(
+                color: riskColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -220,9 +246,9 @@ class IntegrityWarningDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: riskLevel,
-            backgroundColor: theme.colorScheme.surfaceContainerHighest,
+            backgroundColor: AppColors.surfaceLight,
             valueColor: AlwaysStoppedAnimation<Color>(
-              _getRiskColor(riskLevel),
+              riskColor,
             ),
             minHeight: 8,
           ),

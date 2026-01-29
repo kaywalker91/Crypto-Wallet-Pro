@@ -35,13 +35,13 @@ class OnboardingSlide extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  iconColor.withOpacity(0.2),
-                  AppColors.secondary.withOpacity(0.1),
+                  iconColor.withValues(alpha: 0.2),
+                  AppColors.secondary.withValues(alpha: 0.1),
                 ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: iconColor.withOpacity(0.3),
+                  color: iconColor.withValues(alpha: 0.3),
                   blurRadius: 40,
                   spreadRadius: 10,
                 ),

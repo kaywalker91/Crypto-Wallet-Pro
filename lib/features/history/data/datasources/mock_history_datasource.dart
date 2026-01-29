@@ -23,7 +23,6 @@ class MockHistoryDataSource implements HistoryRemoteDataSource {
     }
 
     final now = DateTime.now();
-    final userAddress = address.toLowerCase();
 
     return [
       // 받은 ETH

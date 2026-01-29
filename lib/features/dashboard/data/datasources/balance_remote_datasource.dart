@@ -1,5 +1,6 @@
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 import 'package:web3dart/web3dart.dart';
 import '../../../../core/constants/mock_config.dart';
 import '../../../../core/network/web3_client_provider.dart';
@@ -63,7 +64,7 @@ class BalanceRemoteDataSourceImpl implements BalanceRemoteDataSource {
 }
 
 @riverpod
-BalanceRemoteDataSource balanceRemoteDataSource(BalanceRemoteDataSourceRef ref) {
+BalanceRemoteDataSource balanceRemoteDataSource(Ref ref) {
   // 목업 모드일 경우 MockBalanceDataSource 사용
   if (MockConfig.useMockData || MockConfig.mockBalance) {
     return MockBalanceDataSource();

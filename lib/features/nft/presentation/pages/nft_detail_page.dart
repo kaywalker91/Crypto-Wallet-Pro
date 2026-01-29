@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../domain/entities/nft.dart';
 import '../widgets/nft_attribute_chip.dart';
 
@@ -462,55 +464,66 @@ class NftDetailPage extends StatelessWidget {
   void _showOptionsSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle bar
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.cardBorder,
-                  borderRadius: BorderRadius.circular(2),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.sheetMaxWidth),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Handle bar
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBorder,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    // Options
+                    _buildOptionTile(
+                      context,
+                      icon: Icons.refresh,
+                      title: 'Refresh Metadata',
+                      onTap: () {
+                        Navigator.pop(context);
+                        // TODO: Refresh metadata
+                      },
+                    ),
+                    _buildOptionTile(
+                      context,
+                      icon: Icons.visibility_off_outlined,
+                      title: 'Hide NFT',
+                      onTap: () {
+                        Navigator.pop(context);
+                        // TODO: Hide NFT
+                      },
+                    ),
+                    _buildOptionTile(
+                      context,
+                      icon: Icons.report_outlined,
+                      title: 'Report',
+                      onTap: () {
+                        Navigator.pop(context);
+                        // TODO: Report
+                      },
+                    ),
+                  ],
                 ),
               ),
-              // Options
-              _buildOptionTile(
-                context,
-                icon: Icons.refresh,
-                title: 'Refresh Metadata',
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Refresh metadata
-                },
-              ),
-              _buildOptionTile(
-                context,
-                icon: Icons.visibility_off_outlined,
-                title: 'Hide NFT',
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Hide NFT
-                },
-              ),
-              _buildOptionTile(
-                context,
-                icon: Icons.report_outlined,
-                title: 'Report',
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Report
-                },
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -527,11 +540,11 @@ class NftDetailPage extends StatelessWidget {
       leading: Icon(icon, color: AppColors.textSecondary),
       title: Text(
         title,
-        style: const TextStyle(
+        style: AppTypography.textTheme.bodyLarge?.copyWith(
           color: AppColors.textPrimary,
-          fontSize: 16,
         ),
       ),
+      contentPadding: EdgeInsets.symmetric(horizontal: context.horizontalPadding),
       onTap: onTap,
     );
   }

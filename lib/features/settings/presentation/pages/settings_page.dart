@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../wallet/presentation/providers/wallet_provider.dart';
 import '../../domain/entities/app_settings.dart';
 import '../providers/settings_provider.dart';
@@ -96,10 +98,10 @@ class SettingsPage extends ConsumerWidget {
                       return Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.1),
+                          color: AppColors.warning.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.warning.withOpacity(0.3),
+                            color: AppColors.warning.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -120,6 +122,10 @@ class SettingsPage extends ConsumerWidget {
                             ),
                             TextButton(
                               onPressed: () => context.push(Routes.pinSetup),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.primaryLight,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              ),
                               child: const Text('설정'),
                             ),
                           ],
@@ -346,51 +352,85 @@ class SettingsPage extends ConsumerWidget {
   ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.textTertiary,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.sheetMaxWidth),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            const Padding(
-              padding: EdgeInsets.all(20),
-              child: Text(
-                'Auto-Lock Timer',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-            ...AutoLockDuration.values.map((duration) => ListTile(
-                  title: Text(
-                    duration.displayName,
-                    style: const TextStyle(color: AppColors.textPrimary),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.textTertiary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                  trailing: duration == settings.autoLockDuration
-                      ? const Icon(Icons.check, color: AppColors.primary)
-                      : null,
-                  onTap: () {
-                    ref
-                        .read(settingsProvider.notifier)
-                        .updateAutoLockDuration(duration);
-                    Navigator.pop(context);
-                  },
-                )),
-            const SizedBox(height: 16),
-          ],
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      context.horizontalPadding,
+                      16,
+                      context.horizontalPadding,
+                      8,
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Auto-Lock Timer',
+                          style: AppTypography.textTheme.titleLarge,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: AutoLockDuration.values.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.cardBorder),
+                      itemBuilder: (context, index) {
+                        final duration = AutoLockDuration.values[index];
+                        final isSelected = duration == settings.autoLockDuration;
+                        return ListTile(
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: context.horizontalPadding,
+                          ),
+                          title: Text(
+                            duration.displayName,
+                            style: AppTypography.textTheme.bodyLarge?.copyWith(
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? const Icon(Icons.check, color: AppColors.primary)
+                              : null,
+                          selected: isSelected,
+                          selectedTileColor: AppColors.surfaceLight,
+                          onTap: () {
+                            ref
+                                .read(settingsProvider.notifier)
+                                .updateAutoLockDuration(duration);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -403,58 +443,91 @@ class SettingsPage extends ConsumerWidget {
   ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.textTertiary,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.sheetMaxWidth),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            const Padding(
-              padding: EdgeInsets.all(20),
-              child: Text(
-                'Display Currency',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-            ...CurrencyType.values.map((currency) => ListTile(
-                  leading: Text(
-                    currency.symbol,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      color: AppColors.textPrimary,
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.textTertiary,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  title: Text(
-                    currency.code,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      context.horizontalPadding,
+                      16,
+                      context.horizontalPadding,
+                      8,
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Display Currency',
+                          style: AppTypography.textTheme.titleLarge,
+                        ),
+                      ],
+                    ),
                   ),
-                  trailing: currency == settings.displayCurrency
-                      ? const Icon(Icons.check, color: AppColors.primary)
-                      : null,
-                  onTap: () {
-                    ref
-                        .read(settingsProvider.notifier)
-                        .updateCurrency(currency);
-                    Navigator.pop(context);
-                  },
-                )),
-            const SizedBox(height: 16),
-          ],
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: CurrencyType.values.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.cardBorder),
+                      itemBuilder: (context, index) {
+                        final currency = CurrencyType.values[index];
+                        final isSelected = currency == settings.displayCurrency;
+                        return ListTile(
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: context.horizontalPadding,
+                          ),
+                          leading: Text(
+                            currency.symbol,
+                            style: AppTypography.textTheme.titleMedium?.copyWith(
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          title: Text(
+                            currency.code,
+                            style: AppTypography.textTheme.bodyLarge?.copyWith(
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? const Icon(Icons.check, color: AppColors.primary)
+                              : null,
+                          selected: isSelected,
+                          selectedTileColor: AppColors.surfaceLight,
+                          onTap: () {
+                            ref
+                                .read(settingsProvider.notifier)
+                                .updateCurrency(currency);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -485,10 +558,10 @@ class SettingsPage extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.textTertiary),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.textSecondary,
             ),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -496,13 +569,6 @@ class SettingsPage extends ConsumerWidget {
               // TODO: Navigate to recovery phrase page
               _showComingSoon(context, 'Recovery Phrase');
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
             child: const Text('View Phrase'),
           ),
         ],
@@ -511,8 +577,9 @@ class SettingsPage extends ConsumerWidget {
   }
 
   Future<void> _handleDeleteWallet(BuildContext context, WidgetRef ref) async {
-    final messenger = ScaffoldMessenger.of(context);
     await ref.read(walletProvider.notifier).deleteWallet();
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
 
     final error = ref.read(walletViewProvider).error;
     if (error != null) {
@@ -568,21 +635,49 @@ class SettingsPage extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.textTertiary),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.textSecondary,
             ),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
               await _handleDeleteWallet(context, ref);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return AppColors.surfaceLight;
+                }
+                if (states.contains(WidgetState.pressed)) {
+                  return AppColors.error.withValues(alpha: 0.9);
+                }
+                if (states.contains(WidgetState.hovered)) {
+                  return AppColors.error.withValues(alpha: 0.8);
+                }
+                return AppColors.error;
+              }),
+              foregroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return AppColors.textDisabled;
+                }
+                return Colors.white;
+              }),
+              overlayColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.pressed)) {
+                  return Colors.white.withValues(alpha: 0.16);
+                }
+                if (states.contains(WidgetState.hovered) ||
+                    states.contains(WidgetState.focused)) {
+                  return Colors.white.withValues(alpha: 0.1);
+                }
+                return null;
+              }),
+              shape: WidgetStatePropertyAll(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
             child: const Text('Delete'),

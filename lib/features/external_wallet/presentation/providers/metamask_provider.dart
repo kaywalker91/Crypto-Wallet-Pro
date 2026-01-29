@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../data/services/metamask_service.dart';
 import '../../domain/entities/external_wallet_connection.dart';
@@ -49,7 +50,7 @@ class MetaMaskState {
 
 /// Provider for MetaMaskService singleton
 @Riverpod(keepAlive: true)
-MetaMaskService metamaskService(MetamaskServiceRef ref) {
+MetaMaskService metamaskService(Ref ref) {
   final service = MetaMaskService();
 
   ref.onDispose(() {
@@ -203,18 +204,18 @@ class MetaMaskNotifier extends _$MetaMaskNotifier {
 
 /// Convenience provider for connection status
 @riverpod
-MetaMaskConnectionStatus metamaskConnectionStatus(MetamaskConnectionStatusRef ref) {
+MetaMaskConnectionStatus metamaskConnectionStatus(Ref ref) {
   return ref.watch(metaMaskNotifierProvider).status;
 }
 
 /// Convenience provider for connected address
 @riverpod
-String? metamaskConnectedAddress(MetamaskConnectedAddressRef ref) {
+String? metamaskConnectedAddress(Ref ref) {
   return ref.watch(metaMaskNotifierProvider).connection?.address;
 }
 
 /// Convenience provider for connection check
 @riverpod
-bool isMetamaskConnected(IsMetamaskConnectedRef ref) {
+bool isMetamaskConnected(Ref ref) {
   return ref.watch(metaMaskNotifierProvider).status == MetaMaskConnectionStatus.connected;
 }

@@ -25,17 +25,14 @@ class MockSecureStorageService implements SecureStorageService {
     _storage.remove(key);
   }
 
-  @override
   Future<void> deleteAll() async {
     _storage.clear();
   }
 
-  @override
   Future<Map<String, String>> readAll() async {
     return Map.from(_storage);
   }
 
-  @override
   Future<bool> containsKey(String key) async {
     return _storage.containsKey(key);
   }

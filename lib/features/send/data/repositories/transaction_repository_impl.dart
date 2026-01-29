@@ -1,6 +1,7 @@
 
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/gas_estimate.dart';
 import '../../domain/repositories/transaction_repository.dart';
@@ -51,7 +52,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
 }
 
 @riverpod
-TransactionRepository transactionRepository(TransactionRepositoryRef ref) {
+TransactionRepository transactionRepository(Ref ref) {
   final remote = ref.watch(transactionRemoteDataSourceProvider);
   return TransactionRepositoryImpl(remote);
 }

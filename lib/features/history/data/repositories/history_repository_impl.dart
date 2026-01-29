@@ -1,6 +1,7 @@
 
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
@@ -36,7 +37,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
 }
 
 @riverpod
-HistoryRepository historyRepository(HistoryRepositoryRef ref) {
+HistoryRepository historyRepository(Ref ref) {
   final remoteDataSource = ref.watch(historyRemoteDataSourceProvider);
   return HistoryRepositoryImpl(remoteDataSource);
 }

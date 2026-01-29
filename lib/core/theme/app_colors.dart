@@ -1,46 +1,46 @@
 import 'package:flutter/material.dart';
 
 /// Dark mode color palette for Crypto Wallet Pro
-/// Design: Glassmorphism + Neon gradients
+/// Design: Glassmorphism + deep navy accents
 class AppColors {
   AppColors._();
 
   // Background colors
-  static const Color background = Color(0xFF0D0D0D);
-  static const Color backgroundSecondary = Color(0xFF1A1A2E);
-  static const Color surface = Color(0xFF16213E);
-  static const Color surfaceLight = Color(0xFF1F2937);
+  static const Color background = Color(0xFF0B1220);
+  static const Color backgroundSecondary = Color(0xFF0E172A);
+  static const Color surface = Color(0xFF101B2D);
+  static const Color surfaceLight = Color(0xFF18243A);
 
   // Card & Glass surfaces
-  static const Color cardBackground = Color(0x0DFFFFFF); // 5% white
+  static const Color cardBackground = Color(0xFF111E33);
   static const Color cardBorder = Color(0x33FFFFFF); // 20% white
   static const Color glassSurface = Color(0x1AFFFFFF); // 10% white
 
-  // Primary accent - Neon Cyan
-  static const Color primary = Color(0xFF00D9FF);
-  static const Color primaryLight = Color(0xFF5CE1E6);
-  static const Color primaryDark = Color(0xFF00A8CC);
+  // Primary accent - Blue/Cyan
+  static const Color primary = Color(0xFF2BB0FF);
+  static const Color primaryLight = Color(0xFF7CD9FF);
+  static const Color primaryDark = Color(0xFF0A7AC2);
 
-  // Secondary accent - Neon Purple
-  static const Color secondary = Color(0xFFBD00FF);
-  static const Color secondaryLight = Color(0xFFE040FB);
-  static const Color secondaryDark = Color(0xFF9C27B0);
+  // Secondary accent - Indigo Blue
+  static const Color secondary = Color(0xFF5B7CFF);
+  static const Color secondaryLight = Color(0xFF8FA6FF);
+  static const Color secondaryDark = Color(0xFF3F5ED6);
 
   // Gradient colors
-  static const Color gradientStart = Color(0xFF00D9FF);
-  static const Color gradientEnd = Color(0xFFBD00FF);
+  static const Color gradientStart = Color(0xFF2BB0FF);
+  static const Color gradientEnd = Color(0xFF5B7CFF);
 
   // Status colors
-  static const Color success = Color(0xFF00E676);
-  static const Color error = Color(0xFFFF5252);
-  static const Color warning = Color(0xFFFFAB00);
-  static const Color info = Color(0xFF448AFF);
+  static const Color success = Color(0xFF16C784);
+  static const Color error = Color(0xFFEF4444);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color info = Color(0xFF38BDF8);
 
   // Text colors
-  static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xB3FFFFFF); // 70% white
-  static const Color textTertiary = Color(0x80FFFFFF); // 50% white
-  static const Color textDisabled = Color(0x4DFFFFFF); // 30% white
+  static const Color textPrimary = Color(0xFFF8FAFC);
+  static const Color textSecondary = Color(0xFFCBD5E1);
+  static const Color textTertiary = Color(0xFF94A3B8);
+  static const Color textDisabled = Color(0xFF64748B);
 
   // Token icon colors
   static const Color ethColor = Color(0xFF627EEA);
@@ -64,12 +64,12 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0x1AFFFFFF),
+      Color(0x1FFFFFFF),
       Color(0x0DFFFFFF),
     ],
   );
 
   // Neon glow colors for shadows
-  static const Color neonCyanGlow = Color(0x6600D9FF);
-  static const Color neonPurpleGlow = Color(0x66BD00FF);
+  static const Color neonCyanGlow = Color(0x662BB0FF);
+  static const Color neonPurpleGlow = Color(0x665B7CFF);
 }

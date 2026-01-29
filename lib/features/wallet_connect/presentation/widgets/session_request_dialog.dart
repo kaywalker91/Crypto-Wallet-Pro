@@ -22,11 +22,11 @@ class SessionRequestDialog extends StatelessWidget {
     final params = request.params.toString(); // Simplify for display
 
     return AlertDialog(
-      backgroundColor: AppColors.surfaceLight,
+      backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text(
         'Signature Request',
-        style: AppTypography.titleLarge.copyWith(color: Colors.white),
+        style: AppTypography.titleLarge.copyWith(color: AppColors.textPrimary),
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -46,12 +46,16 @@ class SessionRequestDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.surfaceLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.cardBorder),
               ),
               child: Text(
                 params,
-                style: AppTypography.bodySmall.copyWith(fontFamily: 'RobotoMono', color: Colors.white),
+                style: AppTypography.bodySmall.copyWith(
+                  fontFamily: 'RobotoMono',
+                  color: AppColors.textPrimary,
+                ),
               ),
             ),
           ],
@@ -60,14 +64,14 @@ class SessionRequestDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: onReject,
-          child: Text('Reject', style: AppTypography.buttonText.copyWith(color: AppColors.error)),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.error,
+          ),
+          child: const Text('Reject'),
         ),
         ElevatedButton(
           onPressed: onApprove,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-          ),
-          child: Text('Approve', style: AppTypography.buttonText.copyWith(color: AppColors.background)),
+          child: const Text('Approve'),
         ),
       ],
     );

@@ -2,6 +2,7 @@
 import 'dart:typed_data';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 import 'package:web3dart/web3dart.dart';
 import '../../../../core/constants/mock_config.dart';
 import '../../../../core/network/web3_client_provider.dart';
@@ -168,7 +169,7 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
 }
 
 @riverpod
-TransactionRemoteDataSource transactionRemoteDataSource(TransactionRemoteDataSourceRef ref) {
+TransactionRemoteDataSource transactionRemoteDataSource(Ref ref) {
   // 목업 모드일 경우 MockTransactionDataSource 사용
   if (MockConfig.useMockData || MockConfig.mockTransaction) {
     return MockTransactionDataSource();
