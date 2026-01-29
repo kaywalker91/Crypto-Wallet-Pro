@@ -9,6 +9,7 @@
 - [스크린샷](#-스크린샷)
 - [기술 스택](#-기술-스택)
 - [아키텍처](#-아키텍처)
+- [문서](#-문서)
 - [시작하기](#-시작하기)
 - [프로젝트 상태](#-프로젝트-상태)
 - [변경사항 요약](#-변경사항-요약)
@@ -94,6 +95,17 @@ lib/
 - **Presentation** → **Domain** 의존 (엔티티 사용, 유스케이스 호출)
 - **Data** → **Domain** 구현 (레포지토리 인터페이스 구현)
 - **Domain** → 외부 의존성 없음 (순수 Dart)
+
+---
+
+## 📚 문서
+
+- **Docs Index**: [docs/README.md](docs/README.md)
+- **사용자 가이드**: [docs/guides/USER_GUIDE.md](docs/guides/USER_GUIDE.md)
+- **보안 가이드**: [docs/security/SCREENSHOT_PROTECTION_GUIDE.md](docs/security/SCREENSHOT_PROTECTION_GUIDE.md), [docs/security/SECURITY_DEVICE_INTEGRITY.md](docs/security/SECURITY_DEVICE_INTEGRITY.md)
+- **개발 단계(Phase)**: [docs/phases/PHASE_6_BIOMETRIC_INTEGRATION.md](docs/phases/PHASE_6_BIOMETRIC_INTEGRATION.md), [docs/phases/PHASE_7_AUDIT_LOGGING.md](docs/phases/PHASE_7_AUDIT_LOGGING.md), [docs/phases/PHASE_8_REMOTE_SYNC.md](docs/phases/PHASE_8_REMOTE_SYNC.md)
+- **요구사항**: [docs/requirements/](docs/requirements/) (PRD)
+- **워크플로우**: [docs/workflows/](docs/workflows/) (구현 워크플로우, Skeleton-First 방식)
 
 ---
 
