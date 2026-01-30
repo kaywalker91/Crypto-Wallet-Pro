@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../../../core/widgets/animated_counter.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -61,17 +62,21 @@ class BalanceCard extends StatelessWidget {
           const SizedBox(height: 20),
 
           // USD Balance
-          Text(
+          _buildAnimatedBalance(
+            context,
             balance?.balanceUsd ?? '\$0.00',
             style: AppTypography.balanceAmount,
+            isUsd: true,
           ),
 
           const SizedBox(height: 4),
 
           // ETH Balance
-          Text(
-            balance?.balanceEth ?? '0.00 ETH',
+          _buildAnimatedBalance(
+            context,
+            balance?.balanceEth ?? '0.0000 ETH',
             style: AppTypography.balanceUsd,
+            isUsd: false,
           ),
 
           const SizedBox(height: 20),
@@ -111,6 +116,28 @@ class BalanceCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAnimatedBalance(
+    BuildContext context,
+    String distinctString,
+    {TextStyle? style, bool isUsd = true}
+  ) {
+    // Basic parsing: remove $, ETH, commas
+    final cleanString = distinctString
+        .replaceAll('\$', '')
+        .replaceAll('ETH', '')
+        .replaceAll(',', '')
+        .trim();
+    final value = double.tryParse(cleanString) ?? 0.0;
+
+    return AnimatedCounter(
+      value: value,
+      style: style,
+      prefix: isUsd ? '\$' : '',
+      suffix: isUsd ? '' : ' ETH',
+      fractionalDigits: isUsd ? 2 : 4,
     );
   }
 }

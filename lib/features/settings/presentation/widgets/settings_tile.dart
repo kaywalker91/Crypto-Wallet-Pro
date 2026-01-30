@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
-/// A single settings item tile
+/// A single settings item tile with improved visual design
 class SettingsTile extends StatelessWidget {
   final IconData icon;
   final Color? iconColor;
@@ -12,6 +12,7 @@ class SettingsTile extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showChevron;
   final bool isDestructive;
+  final bool useGradientIcon;
 
   const SettingsTile({
     super.key,
@@ -23,6 +24,7 @@ class SettingsTile extends StatelessWidget {
     this.onTap,
     this.showChevron = true,
     this.isDestructive = false,
+    this.useGradientIcon = false,
   });
 
   @override
@@ -38,23 +40,18 @@ class SettingsTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
+        splashColor: effectiveIconColor.withValues(alpha: 0.1),
+        highlightColor: effectiveIconColor.withValues(alpha: 0.05),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              // Icon container
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: effectiveIconColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: effectiveIconColor,
-                ),
+              // Icon container with optional gradient
+              _IconContainer(
+                icon: icon,
+                color: effectiveIconColor,
+                useGradient: useGradientIcon,
+                isDestructive: isDestructive,
               ),
               const SizedBox(width: 14),
               // Title and subtitle
@@ -88,7 +85,7 @@ class SettingsTile extends StatelessWidget {
                 trailing!
               else if (showChevron && onTap != null)
                 const Icon(
-                  Icons.chevron_right,
+                  Icons.chevron_right_rounded,
                   size: 22,
                   color: AppColors.textTertiary,
                 ),
@@ -99,6 +96,58 @@ class SettingsTile extends StatelessWidget {
     );
   }
 }
+
+/// Icon container with gradient or solid background
+class _IconContainer extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final bool useGradient;
+  final bool isDestructive;
+
+  const _IconContainer({
+    required this.icon,
+    required this.color,
+    required this.useGradient,
+    required this.isDestructive,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        gradient: useGradient && !isDestructive
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  color,
+                  color.withValues(alpha: 0.7),
+                ],
+              )
+            : null,
+        color: useGradient ? null : color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: useGradient && !isDestructive
+            ? [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
+      ),
+      child: Icon(
+        icon,
+        size: 20,
+        color: useGradient ? Colors.white : color,
+      ),
+    );
+  }
+}
+
 
 /// A settings tile with a toggle switch
 class SettingsToggleTile extends StatelessWidget {
@@ -162,7 +211,7 @@ class SettingsToggleTile extends StatelessWidget {
   }
 }
 
-/// A settings tile showing a selected value
+/// A settings tile showing a selected value with chip-style display
 class SettingsValueTile extends StatelessWidget {
   final IconData icon;
   final Color? iconColor;
@@ -185,21 +234,33 @@ class SettingsValueTile extends StatelessWidget {
       icon: icon,
       iconColor: iconColor,
       title: title,
-      showChevron: true,
+      showChevron: false,
       onTap: onTap,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 15,
-              color: AppColors.textTertiary,
+          // Chip-style value display
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLight.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppColors.cardBorder.withValues(alpha: 0.5),
+              ),
+            ),
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
           const Icon(
-            Icons.chevron_right,
+            Icons.chevron_right_rounded,
             size: 22,
             color: AppColors.textTertiary,
           ),

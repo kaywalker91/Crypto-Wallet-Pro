@@ -1,93 +1,68 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 
-/// Empty state widget for WalletConnect sessions
+/// Empty state widget for WalletConnect sessions - Simplified design
 class SessionEmptyState extends StatelessWidget {
   final String? message;
-  final String? actionLabel;
-  final VoidCallback? onAction;
   final bool isFiltered;
 
   const SessionEmptyState({
     super.key,
     this.message,
-    this.actionLabel,
-    this.onAction,
     this.isFiltered = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Icon
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: AppColors.cardBackground,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.cardBorder,
-                  width: 2,
-                ),
-              ),
-              child: Icon(
-                isFiltered ? Icons.filter_list_off : Icons.link_off_rounded,
-                size: 48,
-                color: AppColors.textTertiary,
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Title
-            Text(
-              isFiltered ? 'No Sessions Found' : 'No Connected dApps',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Message
-            Text(
-              message ??
-                  (isFiltered
-                      ? 'Try adjusting your filter to see more sessions'
-                      : 'Connect to dApps by scanning a WalletConnect QR code'),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                height: 1.5,
-              ),
-            ),
-            if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 32),
-              // Action button
-              ElevatedButton.icon(
-                onPressed: onAction,
-                icon: const Icon(Icons.qr_code_scanner_rounded),
-                label: Text(actionLabel!),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ],
-          ],
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.cardBorder,
+          width: 1,
         ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Minimal icon
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLight,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isFiltered ? Icons.filter_list_off : Icons.link_off_rounded,
+              size: 28,
+              color: AppColors.textTertiary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Title
+          Text(
+            isFiltered ? 'No results' : 'No active sessions',
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Message
+          Text(
+            message ?? "Use 'Scan QR Code' above to connect to a dApp",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+        ],
       ),
     );
   }

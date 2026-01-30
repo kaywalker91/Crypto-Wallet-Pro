@@ -86,10 +86,14 @@ class MetaMaskNotifier extends _$MetaMaskNotifier {
 
     // Listen to errors
     _errorSubscription = _service.errorStream.listen((error) {
-      state = state.copyWith(
-        status: MetaMaskConnectionStatus.error,
-        errorMessage: error.message,
-      );
+      if (error.code == 'USER_CANCELLED' || error.code == 'CANCELLED') {
+        state = state.disconnected();
+      } else {
+        state = state.copyWith(
+          status: MetaMaskConnectionStatus.error,
+          errorMessage: error.message,
+        );
+      }
     });
 
     // Cleanup on dispose
@@ -102,6 +106,12 @@ class MetaMaskNotifier extends _$MetaMaskNotifier {
     _restoreSession();
 
     return const MetaMaskState();
+  }
+
+  /// Cancel connection attempt
+  void cancelConnect() {
+    _service.cancelConnection();
+    state = state.disconnected();
   }
 
   /// Restore existing session on startup

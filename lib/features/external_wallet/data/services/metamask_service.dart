@@ -365,6 +365,16 @@ class MetaMaskService {
     return name.contains('metamask');
   }
 
+  /// Cancel connection attempt
+  void cancelConnection() {
+    debugPrint('Cancelling connection attempt');
+    _cancelPendingConnection();
+    _errorController.add(const MetaMaskConnectionException(
+      'Connection cancelled by user',
+      code: 'USER_CANCELLED',
+    ));
+  }
+
   /// Cancel pending connection attempt
   void _cancelPendingConnection() {
     _stopWatchdogTimer();
@@ -376,7 +386,7 @@ class MetaMaskService {
     _connectionCompleter = null;
     _pendingUri = null;
     _initialSessionTopics = null;
-    // ✅ CONCURRENCY: 취소 시에도 플래그 리셋
+    // ✅ CONCURRENCY: Reset flag on cancel
     _isProcessingSession = false;
   }
 

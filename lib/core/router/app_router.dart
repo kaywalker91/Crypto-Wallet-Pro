@@ -13,6 +13,8 @@ import '../../features/receive/presentation/pages/receive_page.dart';
 import '../../features/history/presentation/pages/history_page.dart';
 import '../../features/wallet_connect/presentation/pages/qr_scanner_page.dart';
 import '../../features/external_wallet/presentation/pages/connect_external_wallet_page.dart';
+import '../../features/settings/presentation/pages/licenses_page.dart';
+import '../../features/settings/presentation/pages/about_page.dart';
 
 /// Application router configuration
 /// Uses GoRouter for declarative routing
@@ -234,6 +236,48 @@ class AppRouter {
           },
         ),
       ),
+
+      // Open Source Licenses
+      GoRoute(
+        path: '/licenses',
+        name: 'licenses',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const LicensesPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
+            var tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        ),
+      ),
+
+      // About page
+      GoRoute(
+        path: '/about',
+        name: 'about',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const AboutPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
+            var tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        ),
+      ),
     ],
   );
 }
@@ -254,4 +298,6 @@ class Routes {
   static const String history = '/history';
   static const String qrScanner = '/qr-scanner';
   static const String connectExternalWallet = '/connect-external-wallet';
+  static const String licenses = '/licenses';
+  static const String about = '/about';
 }

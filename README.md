@@ -96,6 +96,50 @@ lib/
 - **Data** → **Domain** 구현 (레포지토리 인터페이스 구현)
 - **Domain** → 외부 의존성 없음 (순수 Dart)
 
+### 📐 다이어그램 (Mermaid)
+
+```mermaid
+graph TD
+    subgraph Presentation Layer
+        UI[UI Widgets] --> VM[Riverpod Providers]
+    end
+
+    subgraph Domain Layer
+        VM --> UC[Use Cases]
+        UC --> Repo[Repository Interface]
+        UC --> Entity[Entities]
+    end
+
+    subgraph Data Layer
+        RepoImpl[Repository Impl] -.-> Repo
+        RepoImpl --> Remote[Remote DataSource]
+        RepoImpl --> Local[Local DataSource]
+    end
+
+    Remote --> API[Web3 / Alchemy]
+    Local --> Storage[Secure Storage / DB]
+```
+
+---
+
+## 💡 기술적 의사결정 (Tech Highlights)
+
+이 프로젝트는 단순한 기능 구현을 넘어 **"유지보수성"**과 **"확장성"**을 고려하여 설계되었습니다.
+
+### 1. 왜 Riverpod인가?
+- **Compile-safe**: 컴파일 타임에 Provider 에러를 잡을 수 있어 런타임 안정성이 보장됩니다.
+- **Testability**: `Override` 기능을 통해 손쉽게 Mock 객체를 주입하여 테스트가 용이합니다.
+- **No BuildContext**: BuildContext 없이도 상태에 접근 가능하여 비즈니스 로직 분리가 자연스럽습니다.
+
+### 2. 왜 Clean Architecture인가?
+- **프레임워크 독립성**: UI 프레임워크가 바뀌더라도 핵심 비즈니스 로직(Domain)은 그대로 유지됩니다.
+- **테스트 용이성**: 모든 계층이 분리되어 있어 단위 테스트(Unit Test) 작성이 수월합니다.
+- **협업 효율성**: 역할과 책임이 명확하여 여러 개발자가 동시에 작업하기 좋습니다.
+
+### 3. 보안 전략 (Security)
+- **Private Key 보호**: `flutter_secure_storage`를 사용하여 OS 레벨의 Keystore/Keychain에 암호화하여 저장합니다.
+- **메모리 보안**: 민감한 키 사용 후 즉시 메모리에서 소거하거나 필요한 순간에만 복호화하여 사용합니다.
+
 ---
 
 ## 📚 문서

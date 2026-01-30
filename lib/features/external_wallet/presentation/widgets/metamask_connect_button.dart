@@ -46,7 +46,7 @@ class MetaMaskConnectButton extends ConsumerWidget {
 
     return switch (state.status) {
       MetaMaskConnectionStatus.disconnected => _buildDisconnectedButton(context, notifier),
-      MetaMaskConnectionStatus.connecting => _buildConnectingButton(context),
+      MetaMaskConnectionStatus.connecting => _buildConnectingButton(context, notifier),
       MetaMaskConnectionStatus.connected => _buildConnectedButton(context, state, notifier),
       MetaMaskConnectionStatus.error => _buildErrorButton(context, state, notifier),
     };
@@ -67,25 +67,29 @@ class MetaMaskConnectButton extends ConsumerWidget {
     );
   }
 
-  Widget _buildConnectingButton(BuildContext context) {
-    return ElevatedButton(
-      style: style ?? _defaultButtonStyle(context),
-      onPressed: null,
+  Widget _buildConnectingButton(BuildContext context, MetaMaskNotifier notifier) {
+    return OutlinedButton(
+      style: (style ?? _defaultButtonStyle(context)).copyWith(
+        side: WidgetStateProperty.all(
+          BorderSide(color: Theme.of(context).colorScheme.primary),
+        ),
+      ),
+      onPressed: () => notifier.cancelConnect(),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 20,
-            height: 20,
+            width: 16,
+            height: 16,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
+                Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
           const SizedBox(width: 8),
-          const Text('Connecting...'),
+          const Text('Cancel'),
         ],
       ),
     );
